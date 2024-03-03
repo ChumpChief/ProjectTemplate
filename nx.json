@@ -1,0 +1,18 @@
+{
+    "targetDefaults": {
+        "build": {
+            "dependsOn": ["^build"],
+            "outputs": ["{projectRoot}/built"],
+            "cache": true
+        },
+        "lint": {
+            "dependsOn": ["^build"],
+            "cache": true
+        },
+        "webpack": {
+            "outputs": ["{projectRoot}/webpacked"],
+            "cache": true
+        }
+    },
+    "defaultBase": "main"
+}

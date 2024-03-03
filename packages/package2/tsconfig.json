@@ -1,0 +1,6 @@
+{
+    "extends": "tsconfig-shared/tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./built"
+    }
+}

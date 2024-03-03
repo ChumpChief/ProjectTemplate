@@ -1,0 +1,24 @@
+{
+    "name": "project-template",
+    "version": "1.0.0",
+    "private": true,
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build": "nx run-many --target=build",
+        "clean": "nx run-many --target=clean",
+        "lint": "nx run-many --target=lint",
+        "nx": "nx",
+        "reset": "nx reset",
+        "start": "nx run examples:start",
+        "test": "nx run-many --target=test",
+        "webpack": "nx run-many --target=webpack"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "module",
+    "devDependencies": {
+        "nx": "^18.0.6"
+    }
+}
