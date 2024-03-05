@@ -9,6 +9,10 @@
             "dependsOn": ["^build"],
             "cache": true
         },
+        "test": {
+            "dependsOn": ["build"],
+            "cache": true
+        },
         "webpack": {
             "outputs": ["{projectRoot}/webpacked"],
             "cache": true
