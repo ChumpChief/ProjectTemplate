@@ -18,5 +18,8 @@
             "cache": true
         }
     },
+    "release": {
+        "projects": ["packages/*"]
+    },
     "defaultBase": "main"
 }
