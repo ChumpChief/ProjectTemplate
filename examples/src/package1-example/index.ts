@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 
 import { AppView } from "./view/index.js";
 
-const start = async (): Promise<void> => {
+const start = (): void => {
     const appViewDiv = document.createElement("div");
     const reactRoot = createRoot(appViewDiv);
     reactRoot.render(createElement(AppView));
@@ -12,4 +12,4 @@ const start = async (): Promise<void> => {
     div.append(appViewDiv);
 };
 
-start().catch(console.error);
+start();
