@@ -17,6 +17,9 @@
             "dependsOn": ["^build"],
             "outputs": ["{projectRoot}/webpacked"],
             "cache": true
+        },
+        "start": {
+            "dependsOn": ["^build"]
         }
     },
     "defaultBase": "main"
