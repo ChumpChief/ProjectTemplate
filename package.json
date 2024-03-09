@@ -12,7 +12,8 @@
         "reset": "nx reset",
         "start": "nx run examples:start",
         "test": "nx run-many --target=test",
-        "webpack": "nx run-many --target=webpack"
+        "webpack": "nx run-many --target=webpack",
+        "ci": "nx run-many --targets=build,lint,test,webpack"
     },
     "keywords": [],
     "author": "",
