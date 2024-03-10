@@ -1,7 +1,7 @@
 {
     "name": "project-template",
     "private": true,
-    "description": "",
+    "description": "A template for typescript monorepo projects",
     "main": "index.js",
     "scripts": {
         "build": "nx run-many --target=build",
@@ -19,6 +19,6 @@
     "license": "ISC",
     "type": "module",
     "devDependencies": {
-        "nx": "^18.0.7"
+        "nx": "^18.0.8"
     }
 }
