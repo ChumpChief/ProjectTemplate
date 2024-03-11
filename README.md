@@ -22,6 +22,8 @@ All commands should be run from the project root.
 * `pnpm webpack` - Webpack examples
 * `pnpm clean` - Delete all build and webpack outputs
 * `pnpm start` - Start a dev server running the examples
+* `pnpm changeset` - Add a changeset
+* `pnpm bump-versions` - Consume changesets, bump versions, and produce changelogs
 
 ## Structure
 
