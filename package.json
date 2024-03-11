@@ -2,7 +2,6 @@
     "name": "project-template",
     "private": true,
     "description": "A template for typescript monorepo projects",
-    "main": "index.js",
     "scripts": {
         "build": "nx run-many --target=build",
         "clean": "nx run-many --target=clean",
@@ -15,8 +14,8 @@
         "ci": "nx run-many --targets=build,lint,test,webpack"
     },
     "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "author": "Matt Rakow",
+    "license": "Unlicense",
     "type": "module",
     "devDependencies": {
         "@changesets/cli": "^2.27.1",

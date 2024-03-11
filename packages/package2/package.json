@@ -10,8 +10,8 @@
         "test": "NODE_OPTIONS=--experimental-vm-modules jest built/.*.spec.js"
     },
     "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "author": "Matt Rakow",
+    "license": "Unlicense",
     "type": "module",
     "dependencies": {
         "package1": "workspace:*"

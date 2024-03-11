@@ -1,9 +1,9 @@
 {
     "name": "eslint-config-shared",
     "private": true,
-    "description": "",
+    "description": "Shared eslint config used throughout the monorepo",
     "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "author": "Matt Rakow",
+    "license": "Unlicense",
     "type": "module"
 }
