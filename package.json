@@ -1,5 +1,6 @@
 {
     "name": "project-template",
+    "version": "0.1.0",
     "private": true,
     "description": "A template for typescript monorepo projects",
     "scripts": {
