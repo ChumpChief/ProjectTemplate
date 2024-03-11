@@ -23,7 +23,6 @@ All commands should be run from the project root.
 * `pnpm clean` - Delete all build and webpack outputs
 * `pnpm start` - Start a dev server running the examples
 * `pnpm changeset` - Add a changeset
-* `pnpm bump-versions` - Consume changesets, bump versions, and produce changelogs
 
 ## Structure
 
@@ -43,7 +42,9 @@ The `examples` directory contains a single package with all examples.  When runn
 
 ## Github
 
-This repo provides a Github Action for CI.  This will run all checks against the repo on push and PRs, and is appropriate to use as a blocking status check.
+This repo provides Github Actions for:
+1. CI - Runs all checks against the repo on push and PRs, and is appropriate to use as a blocking status check.
+1. Release - Consumes changesets, bumps versions produces changelogs, publishes packages to npm, creates git tags, and creates Github releases.
 
 ## Technology choices
 
