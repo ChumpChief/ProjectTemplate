@@ -19,6 +19,7 @@
     "license": "ISC",
     "type": "module",
     "devDependencies": {
+        "@changesets/cli": "^2.27.1",
         "nx": "^18.0.8"
     }
 }
