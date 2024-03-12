@@ -1,9 +1,7 @@
 {
     "name": "project-template",
-    "version": "1.0.0",
     "private": true,
-    "description": "",
-    "main": "index.js",
+    "description": "A template for typescript monorepo projects",
     "scripts": {
         "build": "nx run-many --target=build",
         "clean": "nx run-many --target=clean",
@@ -13,13 +11,15 @@
         "start": "nx run examples:start",
         "test": "nx run-many --target=test",
         "webpack": "nx run-many --target=webpack",
-        "ci": "nx run-many --targets=build,lint,test,webpack"
+        "ci": "nx run-many --targets=build,lint,test,webpack",
+        "release": "pnpm run build && changeset publish"
     },
     "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "author": "Matt Rakow",
+    "license": "Unlicense",
     "type": "module",
     "devDependencies": {
-        "nx": "^18.0.7"
+        "@changesets/cli": "^2.27.1",
+        "nx": "^18.0.8"
     }
 }

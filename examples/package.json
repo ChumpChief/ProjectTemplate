@@ -1,9 +1,7 @@
 {
     "name": "examples",
-    "version": "1.0.0",
     "private": true,
-    "description": "",
-    "main": "built/index.js",
+    "description": "Examples for demonstrating packages in the monorepo",
     "scripts": {
         "build": "tsc",
         "clean": "rm -rf built && rm -rf webpacked",
@@ -12,8 +10,8 @@
         "start": "webpack-dev-server"
     },
     "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "author": "Matt Rakow",
+    "license": "Unlicense",
     "type": "module",
     "dependencies": {
         "package1": "workspace:*",

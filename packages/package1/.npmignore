@@ -2,4 +2,4 @@
 .eslintrc.cjs
 tsconfig.json
 src/
-built/test/
+built/**/test/

@@ -1,6 +1,6 @@
 {
     "name": "package2",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "description": "",
     "main": "built/index.js",
     "scripts": {
@@ -10,8 +10,8 @@
         "test": "NODE_OPTIONS=--experimental-vm-modules jest built/.*.spec.js"
     },
     "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "author": "Matt Rakow",
+    "license": "Unlicense",
     "type": "module",
     "dependencies": {
         "package1": "workspace:*"
