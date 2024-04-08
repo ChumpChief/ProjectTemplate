@@ -45,6 +45,7 @@ The `examples` directory contains a single package with all examples.  When runn
 This repo provides Github Actions for:
 1. CI - Runs all checks against the repo on push and PRs, and is appropriate to use as a blocking status check.
 1. Release (IN PROGRESS) - Consumes changesets, bumps versions produces changelogs, publishes packages to npm, creates git tags, and creates Github releases.
+    * This action has further prerequisite setup.  See [release.yml](./.github/workflows/release.yml) for details.
 
 ## Technology choices
 
