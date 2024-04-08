@@ -13,8 +13,7 @@
     "author": "Matt Rakow",
     "license": "Unlicense",
     "type": "module",
-    "dependencies": {
-    },
+    "dependencies": {},
     "devDependencies": {
         "@jest/globals": "^29.7.0",
         "@typescript-eslint/eslint-plugin": "^6.21.0",
