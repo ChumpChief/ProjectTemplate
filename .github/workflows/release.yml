@@ -1,0 +1,173 @@
+# Workflow assumes:
+# - Repository variables and secrets:
+#   - vars.CHUMPCHIEF_RELEASE_BOT_APP_ID
+#   - secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY
+#   - Note: would prefer to put these in an environment requiring approval, but this then requires
+#     each individual job to be approved which is too annoying.  See:
+#     https://github.com/orgs/community/discussions/14417#discussioncomment-2904984
+# - Automatic head branch deletion (Github repository setting)
+
+name: Release
+
+run-name: Release from ${{ github.ref_name }}${{ inputs.dryRun && ' (dry run)' || '' }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+on:
+  # Only runs on demand
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: "Dry run"
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  lock_branch:
+    name: Lock the branch
+    runs-on: ubuntu-latest
+    outputs:
+      lockRulesetId: ${{ steps.lock_branch.outputs.result }}
+    steps:
+      - name: Generate app token
+        id: generate_app_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.CHUMPCHIEF_RELEASE_BOT_APP_ID }}
+          private-key: ${{ secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY }}
+      - name: Lock branch
+        id: lock_branch
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.generate_app_token.outputs.token }}
+          result-encoding: string
+          # Pass rule id through as an output so it can be deleted at the end
+          script: |
+            const branchName = context.ref.replace("refs/heads/", "");
+            console.log(`Locking branch ${ branchName }...`);
+            const { data: lockRuleset } = await github.rest.repos.createRepoRuleset({ repo: context.repo.repo, owner: context.repo.owner, name: `Lock ${ branchName } for bump`, enforcement: "active", bypass_actors: [ { actor_id: 5, actor_type: "RepositoryRole", bypass_mode: "pull_request" } ], conditions: { ref_name: { include: [ context.ref ], exclude: [] } }, rules: [ { type: "update" } ] });
+            console.log(`Locked the branch.  Ruleset ID: ${ lockRuleset.id }`);
+            return lockRuleset.id;
+
+  bump_version:
+    name: Bump the version
+    runs-on: ubuntu-latest
+    needs: [lock_branch]
+    outputs:
+      bumpInfo: ${{ steps.consolidate_outputs.outputs.result }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Node setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: pnpm setup
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+      - name: Install dependencies
+        run: |
+          pnpm i
+      - name: Generate app token
+        id: generate_app_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.CHUMPCHIEF_RELEASE_BOT_APP_ID }}
+          private-key: ${{ secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY }}
+      - name: Create bump branch
+        id: create_bump_branch
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.generate_app_token.outputs.token }}
+          script: |
+            const script = require(".github/workflows/scripts/createBumpBranch.cjs");
+            return script({ github, context, core, exec });
+      - name: Create bump PR
+        id: create_bump_pr
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.generate_app_token.outputs.token }}
+          script: |
+            const script = require(".github/workflows/scripts/createBumpPR.cjs");
+            return script({ github, context, core, exec }, ${{ steps.create_bump_branch.outputs.result }});
+      # TODO: Also wait for CI of the merged PR to finish successfully?
+      - name: Wait for PR merge
+        id: wait_for_pr_merge
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.generate_app_token.outputs.token }}
+          script: |
+            const script = require(".github/workflows/scripts/waitForPRMerge.cjs");
+            return script({ github, context, core, exec }, ${{ steps.create_bump_pr.outputs.result }});
+      - name: Consolidate outputs
+        id: consolidate_outputs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { newVersionNumber, releaseNotes } = ${{ steps.create_bump_branch.outputs.result }};
+            const { mergeCommitSha } = ${{ steps.wait_for_pr_merge.outputs.result }};
+            return {
+              newVersionNumber,
+              releaseNotes,
+              mergeCommitSha,
+            };
+
+  unlock_branch:
+    name: Unlock the branch
+    runs-on: ubuntu-latest
+    needs: [lock_branch, bump_version]
+    steps:
+      - name: Generate app token
+        id: generate_app_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.CHUMPCHIEF_RELEASE_BOT_APP_ID }}
+          private-key: ${{ secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY }}
+      - name: Unlock branch
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.generate_app_token.outputs.token }}
+          script: |
+            console.log("Unlocking the branch...");
+            console.log("Deleting ${{ needs.lock_branch.outputs.lockRulesetId }}...");
+            await github.rest.repos.deleteRepoRuleset({ repo: context.repo.repo, owner: context.repo.owner, ruleset_id: ${{ needs.lock_branch.outputs.lockRulesetId }} });
+
+  create_tag:
+    name: Create a tag
+    runs-on: ubuntu-latest
+    needs: [bump_version]
+    outputs:
+      tagInfo: ${{ steps.create_tag.outputs.result }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.bump_version.outputs.bumpInfo.mergeCommitSha }}
+      - name: Create tag
+        id: create_tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const script = require(".github/workflows/scripts/createTag.cjs");
+            return script({ github, context, core, exec }, ${{ needs.bump_version.outputs.bumpInfo }});
+
+  create_release:
+    name: Create a Github Release
+    runs-on: ubuntu-latest
+    needs: [create_tag]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.create_tag.outputs.tagInfo.tagName }}
+      - name: Create release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const script = require(".github/workflows/scripts/createRelease.cjs");
+            return script({ github, context, core, exec }, ${{ needs.create_tag.outputs.tagInfo }});
