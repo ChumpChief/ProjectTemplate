@@ -1,11 +1,11 @@
-module.exports = async ({github, context, core, exec}, { newVersionNumber, releaseNotes, mergeCommitSha }) => {
+module.exports = async ({github, context, core, exec}, { newVersionNumber, releaseNotes }, { mergeCommitSha }) => {
     console.log("Creating a tag...");
     const versionName = `v${ newVersionNumber }`;
     const { data: tagObject } = await github.rest.git.createTag({
         owner: context.repo.owner,
         repo: context.repo.repo,
         tag: versionName,
-        message: releaseNotes,
+        message: `${ versionName }\n\n${ releaseNotes }`,
         object: mergeCommitSha,
         type: "commit",
         tagger: {
