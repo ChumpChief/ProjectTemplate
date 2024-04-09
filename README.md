@@ -56,10 +56,12 @@ This repo is opinionated about its technology choices.  Specifically,
 * `tsc` for type checking and build output (considering other options for build output though)
 * `eslint` for linting
 * `jest` for testing
+* `changesets` for change tracking
 * `react` for DOM rendering
 * ESM modules
 * Node16 module resolution
 * Strict configurations for typescript, linting, and formatting
 * Recent major version requirements for dependencies
+* Trunk-based development (optionally with release branches)
 
 ![CI status badge](https://github.com/ChumpChief/ProjectTemplate/actions/workflows/ci.yml/badge.svg)
