@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
     inputs:
       dryRun:
-        description: "Dry run"
+        description: "Dry run (only create bump branch and draft PR)"
         required: true
         type: boolean
         default: true
@@ -29,6 +29,7 @@ jobs:
   lock_branch:
     name: Lock the branch
     runs-on: ubuntu-latest
+    if: ${{ !inputs.dryRun }}
     outputs:
       lockRulesetId: ${{ steps.lock_branch.outputs.result }}
     steps:
@@ -52,12 +53,13 @@ jobs:
             console.log(`Locked the branch.  Ruleset ID: ${ lockRuleset.id }`);
             return lockRuleset.id;
 
-  bump_version:
-    name: Bump the version
+  create_bump_branch:
+    name: Create bump branch
     runs-on: ubuntu-latest
+    if: ${{ success() || inputs.dryRun }}
     needs: [lock_branch]
     outputs:
-      bumpInfo: ${{ steps.consolidate_outputs.outputs.result }}
+      bumpBranchInfo: ${{ steps.create_bump_branch.outputs.result }}
 
     steps:
       - name: Checkout
@@ -86,7 +88,26 @@ jobs:
           github-token: ${{ steps.generate_app_token.outputs.token }}
           script: |
             const script = require(".github/workflows/scripts/createBumpBranch.cjs");
-            return script({ github, context, core, exec });
+            return script({ github, context, core, exec }, ${{ inputs.dryRun }});
+
+  create_bump_pr:
+    name: Create bump PR
+    runs-on: ubuntu-latest
+    if: ${{ success() || inputs.dryRun }}
+    needs: [create_bump_branch]
+    outputs:
+      bumpPrInfo: ${{ steps.create_bump_pr.outputs.result }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Generate app token
+        id: generate_app_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.CHUMPCHIEF_RELEASE_BOT_APP_ID }}
+          private-key: ${{ secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY }}
+      # TODO: Use fewer external scripts to avoid requiring checkout?
       - name: Create bump PR
         id: create_bump_pr
         uses: actions/github-script@v7
@@ -94,33 +115,32 @@ jobs:
           github-token: ${{ steps.generate_app_token.outputs.token }}
           script: |
             const script = require(".github/workflows/scripts/createBumpPR.cjs");
-            return script({ github, context, core, exec }, ${{ steps.create_bump_branch.outputs.result }});
+            return script({ github, context, core, exec }, ${{ needs.create_bump_branch.outputs.bumpBranchInfo }}, ${{ inputs.dryRun }});
+
+  wait_for_pr_merge:
+    name: Wait for PR merge
+    runs-on: ubuntu-latest
+    needs: [create_bump_pr]
+    outputs:
+      mergeInfo: ${{ steps.wait_for_pr_merge.outputs.result }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       # TODO: Also wait for CI of the merged PR to finish successfully?
       - name: Wait for PR merge
         id: wait_for_pr_merge
         uses: actions/github-script@v7
         with:
-          github-token: ${{ steps.generate_app_token.outputs.token }}
           script: |
             const script = require(".github/workflows/scripts/waitForPRMerge.cjs");
-            return script({ github, context, core, exec }, ${{ steps.create_bump_pr.outputs.result }});
-      - name: Consolidate outputs
-        id: consolidate_outputs
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { newVersionNumber, releaseNotes } = ${{ steps.create_bump_branch.outputs.result }};
-            const { mergeCommitSha } = ${{ steps.wait_for_pr_merge.outputs.result }};
-            return {
-              newVersionNumber,
-              releaseNotes,
-              mergeCommitSha,
-            };
+            return script({ github, context, core, exec }, ${{ needs.create_bump_pr.outputs.bumpPrInfo }});
 
+  # TODO: Ensure this runs even if earlier steps fail?
   unlock_branch:
     name: Unlock the branch
     runs-on: ubuntu-latest
-    needs: [lock_branch, bump_version]
+    needs: [lock_branch, wait_for_pr_merge]
     steps:
       - name: Generate app token
         id: generate_app_token
@@ -134,40 +154,54 @@ jobs:
           github-token: ${{ steps.generate_app_token.outputs.token }}
           script: |
             console.log("Unlocking the branch...");
-            console.log("Deleting ${{ needs.lock_branch.outputs.lockRulesetId }}...");
+            console.log("Deleting ruleset ${{ needs.lock_branch.outputs.lockRulesetId }}...");
             await github.rest.repos.deleteRepoRuleset({ repo: context.repo.repo, owner: context.repo.owner, ruleset_id: ${{ needs.lock_branch.outputs.lockRulesetId }} });
 
   create_tag:
     name: Create a tag
     runs-on: ubuntu-latest
-    needs: [bump_version]
+    needs: [create_bump_branch, wait_for_pr_merge]
     outputs:
       tagInfo: ${{ steps.create_tag.outputs.result }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ needs.bump_version.outputs.bumpInfo.mergeCommitSha }}
+          ref: ${{ needs.wait_for_pr_merge.outputs.mergeInfo.mergeCommitSha }}
+      - name: Generate app token
+        id: generate_app_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.CHUMPCHIEF_RELEASE_BOT_APP_ID }}
+          private-key: ${{ secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY }}
       - name: Create tag
         id: create_tag
         uses: actions/github-script@v7
         with:
+          github-token: ${{ steps.generate_app_token.outputs.token }}
           script: |
             const script = require(".github/workflows/scripts/createTag.cjs");
-            return script({ github, context, core, exec }, ${{ needs.bump_version.outputs.bumpInfo }});
+            return script({ github, context, core, exec }, ${{ needs.create_bump_branch.outputs.bumpBranchInfo }}, ${{ needs.wait_for_pr_merge.outputs.mergeInfo }});
 
   create_release:
     name: Create a Github Release
     runs-on: ubuntu-latest
-    needs: [create_tag]
+    needs: [create_bump_branch, create_tag]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.create_tag.outputs.tagInfo.tagName }}
+      - name: Generate app token
+        id: generate_app_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.CHUMPCHIEF_RELEASE_BOT_APP_ID }}
+          private-key: ${{ secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY }}
       - name: Create release
         uses: actions/github-script@v7
         with:
+          github-token: ${{ steps.generate_app_token.outputs.token }}
           script: |
             const script = require(".github/workflows/scripts/createRelease.cjs");
-            return script({ github, context, core, exec }, ${{ needs.create_tag.outputs.tagInfo }});
+            return script({ github, context, core, exec }, ${{ needs.create_bump_branch.outputs.bumpBranchInfo }}, ${{ needs.create_tag.outputs.tagInfo }});
