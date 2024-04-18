@@ -24,6 +24,20 @@ All commands should be run from the project root.
 * `pnpm start` - Start a dev server running the examples
 * `pnpm changeset` - Add a changeset
 
+## Recommended setup
+
+After establishing a new repository using this template, the following additional steps are recommended:
+* Set up a branch protection ruleset for `main` and `release/*`.  In addition to the default protections, add:
+    * Require linear history
+    * Require a pull request before merging
+    * Require status checks to pass: CI Validation
+* Disallow merge commits and rebase merging
+* Allow auto-merge
+* Automatically delete head branches
+* Ensure ChumpChief Release Bot is installed, and add these variables/secrets:
+    * vars.CHUMPCHIEF_RELEASE_BOT_APP_ID
+    * secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY
+
 ## Structure
 
 The repo is divided into three high-level directories:  `build`, `packages`, and `examples`.
