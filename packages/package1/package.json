@@ -1,5 +1,5 @@
 {
-    "name": "package1",
+    "name": "@chumpchief/package1",
     "version": "0.1.0",
     "description": "",
     "main": "built/index.js",

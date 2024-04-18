@@ -1,4 +1,4 @@
-import { foo1, foo2, bar1, bar2 } from "package1";
+import { foo1, foo2, bar1, bar2 } from "@chumpchief/package1";
 import type { FC } from "react";
 
 export const AppView: FC = () => (

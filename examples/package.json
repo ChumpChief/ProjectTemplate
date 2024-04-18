@@ -14,8 +14,8 @@
     "license": "Unlicense",
     "type": "module",
     "dependencies": {
-        "package1": "workspace:*",
-        "package2": "workspace:*",
+        "@chumpchief/package1": "workspace:*",
+        "@chumpchief/package2": "workspace:*",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
     },

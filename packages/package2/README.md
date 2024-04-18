@@ -1,3 +1,3 @@
-# package1
+# @chumpchief/package2
 
-Some description of package2.
+Some description of @chumpchief/package2.

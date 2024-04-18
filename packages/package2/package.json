@@ -1,5 +1,5 @@
 {
-    "name": "package2",
+    "name": "@chumpchief/package2",
     "version": "0.1.0",
     "description": "",
     "main": "built/index.js",
@@ -14,7 +14,7 @@
     "license": "Unlicense",
     "type": "module",
     "dependencies": {
-        "package1": "workspace:*"
+        "@chumpchief/package1": "workspace:*"
     },
     "devDependencies": {
         "@jest/globals": "^29.7.0",
