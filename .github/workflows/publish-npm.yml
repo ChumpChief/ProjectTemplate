@@ -1,11 +1,9 @@
 # Workflow assumes:
 # - Repository variables and secrets:
-#   - vars.CHUMPCHIEF_RELEASE_BOT_APP_ID
-#   - secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY
+#   - secrets.NPM_AUTH_TOKEN
 #   - Note: would prefer to put these in an environment requiring approval, but this then requires
 #     each individual job to be approved which is too annoying.  See:
 #     https://github.com/orgs/community/discussions/14417#discussioncomment-2904984
-# - Automatic head branch deletion (Github repository setting)
 
 name: Publish to NPM
 

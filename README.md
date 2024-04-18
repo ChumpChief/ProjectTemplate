@@ -37,7 +37,7 @@ After establishing a new repository using this template, take the following addi
 * Ensure ChumpChief Release Bot is installed, and add these variables/secrets:
     * `vars.CHUMPCHIEF_RELEASE_BOT_APP_ID`
     * `secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY`
-    * TODO: NPM publishing secrets
+    * `secrets.NPM_AUTH_TOKEN`
 
 ## Structure
 
@@ -60,7 +60,7 @@ The `examples` directory contains a single package with all examples.  When runn
 This repo provides Github Actions for:
 * **CI** - Runs all checks against the repo on push and PRs, and is appropriate to use as a blocking status check.
 * **Create Github Release** - For a given branch: consumes changesets, bumps versions, produces changelogs, creates a git tag, and creates a Github release.
-* **Publish to NPM (IN PROGRESS)** - For a given release tag: publishes to NPM and updates the Github release with links to the published packages.
+* **Publish to NPM** - For a given release tag: publishes to NPM and updates the Github release with links to the published packages.
 
 ## Verdaccio
 
