@@ -35,8 +35,8 @@ After establishing a new repository using this template, take the following addi
 * Allow auto-merge
 * Automatically delete head branches
 * Ensure ChumpChief Release Bot is installed, and add these variables/secrets:
-    * vars.CHUMPCHIEF_RELEASE_BOT_APP_ID
-    * secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY
+    * `vars.CHUMPCHIEF_RELEASE_BOT_APP_ID`
+    * `secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY`
     * TODO: NPM publishing secrets
 
 ## Structure
@@ -58,9 +58,9 @@ The `examples` directory contains a single package with all examples.  When runn
 ## Github
 
 This repo provides Github Actions for:
-* CI - Runs all checks against the repo on push and PRs, and is appropriate to use as a blocking status check.
-* Create Github Release - For a given branch: consumes changesets, bumps versions, produces changelogs, creates a git tag, and creates a Github release.
-* Publish to NPM (IN PROGRESS) - For a given release tag: publishes to NPM
+* **CI** - Runs all checks against the repo on push and PRs, and is appropriate to use as a blocking status check.
+* **Create Github Release** - For a given branch: consumes changesets, bumps versions, produces changelogs, creates a git tag, and creates a Github release.
+* **Publish to NPM (IN PROGRESS)** - For a given release tag: publishes to NPM
 
 ## Verdaccio
 
@@ -77,6 +77,10 @@ In addition to the primary commands above, the following commands can be run at 
 
 ## Releasing
 
+### Changesets
+
+This repo drives versioning using [Changesets](https://github.com/changesets/changesets).  You must include changesets with your changes to produce a release.
+
 ### Synchronized versions
 
 This repo elects to synchronize version numbers across packages.  Making changes to any package and releasing will bump the version number for all packages according to the included changesets.
@@ -87,7 +91,9 @@ This repo assumes trunk-based development, and releasing directly from `main` is
 * They should be created from the release tag they build upon.
 * They can be created lazily, since the release tags are always available to create the branch from on-demand.
     * Similarly, they are safe to delete after release since a new one can be created from the desired tag at any time.
-* They should be named in the format `release/${ major }.x` (or for patch releases of non-latest minors, `release/${ major }.${ minor }.x`).
+* They should be named in the format:
+    * For minor or patches of latest-minor: `release/${ major }.x`
+    * For non-latest-minor patches: `release/${ major }.${ minor }.x`.
 
 ### Using the release Github action
 
@@ -96,6 +102,8 @@ Performing a release is done in three parts:
 1. Dispatch the "Create Github Release" workflow against the branch you will release from.
     * This creates a PR for bumping the package versions to the version to be released, and generates the changelogs from the changesets.
     * After generating the PR, the workflow will wait for the PR to be merged before proceeding.
+        * By default, it will wait for 10 minutes before failing.
+        * If it times out, the PR can still be merged and the workflow resumed using "Re-run failed jobs".
     * Note: This will lock the base branch until the version bump is merged, to ensure no further changes are unintentionally included between the generation of the bump/changelogs and its completion.
 1. Review and merge the version bump PR.
     * Because the base branch is locked at this stage, a user with admin priviliges is expected to perform the merge by bypassing branch protections.
