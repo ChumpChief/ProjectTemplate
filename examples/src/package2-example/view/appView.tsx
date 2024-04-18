@@ -1,4 +1,4 @@
-import { baz } from "package2";
+import { baz } from "@chumpchief/package2";
 import type { FC } from "react";
 
 export const AppView: FC = () => (

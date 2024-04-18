@@ -44,7 +44,7 @@ The `examples` directory contains a single package with all examples.  When runn
 
 This repo provides Github Actions for:
 1. CI - Runs all checks against the repo on push and PRs, and is appropriate to use as a blocking status check.
-1. Release (IN PROGRESS) - Consumes changesets, bumps versions produces changelogs, publishes packages to npm, creates git tags, and creates Github releases.
+1. Release (IN PROGRESS) - Consumes changesets, bumps versions, produces changelogs, creates git tags, and creates Github releases.  May eventually publish packages to Github and npm.
     * This action has further prerequisite setup.  See [release.yml](./.github/workflows/release.yml) for details.
 
 ## Technology choices
@@ -56,10 +56,12 @@ This repo is opinionated about its technology choices.  Specifically,
 * `tsc` for type checking and build output (considering other options for build output though)
 * `eslint` for linting
 * `jest` for testing
+* `changesets` for change tracking
 * `react` for DOM rendering
 * ESM modules
 * Node16 module resolution
 * Strict configurations for typescript, linting, and formatting
 * Recent major version requirements for dependencies
+* Trunk-based development (optionally with release branches)
 
 ![CI status badge](https://github.com/ChumpChief/ProjectTemplate/actions/workflows/ci.yml/badge.svg)
