@@ -1,6 +1,6 @@
 # Project Template
 
-This repo is meant to be used as a template for typescript monorepo projects.  It contains placeholder packages to demonstrate the setup.
+This repo is meant to be used as a template for typescript monorepo projects.  It contains placeholder packages to demonstrate usage.
 
 ## Usage
 
@@ -60,7 +60,7 @@ The `examples` directory contains a single package with all examples.  When runn
 This repo provides Github Actions for:
 * **CI** - Runs all checks against the repo on push and PRs, and is appropriate to use as a blocking status check.
 * **Create Github Release** - For a given branch: consumes changesets, bumps versions, produces changelogs, creates a git tag, and creates a Github release.
-* **Publish to NPM (IN PROGRESS)** - For a given release tag: publishes to NPM
+* **Publish to NPM (IN PROGRESS)** - For a given release tag: publishes to NPM and updates the Github release with links to the published packages.
 
 ## Verdaccio
 
@@ -83,7 +83,7 @@ This repo drives versioning using [Changesets](https://github.com/changesets/cha
 
 ### Synchronized versions
 
-This repo elects to synchronize version numbers across packages.  Making changes to any package and releasing will bump the version number for all packages according to the included changesets.
+This repo elects to synchronize version numbers across packages.  Making changes to any package and releasing will bump the version number for all packages.
 
 ### Release branches
 
@@ -115,7 +115,7 @@ Performing a release is done in three parts:
 
 ## Technology choices
 
-This repo is opinionated about its technology choices.  Specifically,
+This repo is opinionated about its technology choices.  Specifically:
 
 * `pnpm` for package management and workspaces
 * `nx` for monorepo commanding and caching
