@@ -46,7 +46,7 @@ jobs:
       - name: pnpm setup
         uses: pnpm/action-setup@v3
         with:
-          version: 8
+          version: 9
       # We need to install and run CI to generate the content that will go into the package.
       # Doesn't hurt to have an extra layer of validation before publishing too.
       - name: Install dependencies
