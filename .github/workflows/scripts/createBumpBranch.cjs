@@ -6,7 +6,7 @@ module.exports = async ({github, context, core, exec}, dryRun) => {
     const bumpBranchName = `bump/${ baseBranchName }${ dryRun ? "-DO_NOT_MERGE" : "" }`;
 
     // Check if the bump branch already exists
-    const branchExists = (await exec.exec("git",  ["show-ref", "--quiet", `refs/heads/${ bumpBranchName }`], { ignoreReturnCode: true })) === 0;
+    const branchExists = (await exec.exec("git show-ref",  ["--quiet", `refs/heads/${ bumpBranchName }`], { ignoreReturnCode: true })) === 0;
     // TODO: Maybe don't permit proceeding if the branch exists?  Definitely not in dry-run mode.
     if (branchExists) {
         // Check out the existing bump branch and reset it to the latest head
@@ -70,7 +70,7 @@ module.exports = async ({github, context, core, exec}, dryRun) => {
         console.log(`Reading name of ${ packageJsonPath }`);
         const packageName = (await readJsonableFile(packageJsonPath)).name;
         const changelogPath = packageJsonPath.replace("package.json", "CHANGELOG.md");
-        releaseNotes += `* [${ packageName }](${ changelogPath })\n`;
+        releaseNotes += `* ${ packageName }: ([changelog](${ changelogPath }))\n`;
     };
 
     // Push the branch

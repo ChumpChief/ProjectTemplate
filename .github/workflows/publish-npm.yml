@@ -1,0 +1,197 @@
+# Workflow assumes:
+# - Repository variables and secrets:
+#   - vars.CHUMPCHIEF_RELEASE_BOT_APP_ID
+#   - secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY
+#   - Note: would prefer to put these in an environment requiring approval, but this then requires
+#     each individual job to be approved which is too annoying.  See:
+#     https://github.com/orgs/community/discussions/14417#discussioncomment-2904984
+# - Automatic head branch deletion (Github repository setting)
+
+name: Publish to NPM
+
+run-name: Publish ${{ inputs.releaseTag }}${{ inputs.dryRun && ' (dry run)' || '' }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+on:
+  # Only runs on demand
+  workflow_dispatch:
+    inputs:
+      releaseTag:
+        description: "Release Tag (vx.x.x)"
+        required: true
+        type: string
+      dryRun:
+        description: "Dry run"
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    name: Publish to NPM
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.releaseTag }}
+      - name: Node setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: pnpm setup
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+      # We need to install and run CI to generate the content that will go into the package.
+      # Doesn't hurt to have an extra layer of validation before publishing too.
+      - name: Install dependencies
+        run: |
+          pnpm i
+      - name: Run CI checks
+        # Note that we must use the run verb, as pnpm ci is reserved.
+        run: |
+          pnpm run ci
+      # Here we'll need to get the NPM token
+      # - name: Generate app token
+      #   id: generate_app_token
+      #   uses: actions/create-github-app-token@v1
+      #   with:
+      #     app-id: ${{ vars.CHUMPCHIEF_RELEASE_BOT_APP_ID }}
+      #     private-key: ${{ secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY }}
+      - name: Publish to NPM${{ inputs.dryRun && ' (dry run)' || '' }}
+        id: publish_to_npm
+        uses: actions/github-script@v7
+        with:
+          # github-token: ${{ steps.generate_app_token.outputs.token }}
+          script: |
+            const fs = require("fs");
+            const releaseTag = "${{ inputs.releaseTag }}";
+            const dryRun = ${{ inputs.dryRun }};
+            const matchResult = releaseTag.match(/^v(\d+)\.(\d+)\.(\d+)$/);
+
+            if (matchResult === null) {
+                throw new Error("Expected a tag name in the format v1.2.3");
+            }
+            const majorVersion = matchResult[1];
+            // TODO: Verify this is actually the latest for its respective major line, probably error otherwise?
+
+            console.log("Performing dry-run publish to determine list of packages that will be published");
+            await exec.exec("pnpm publish", ["-r", "--no-git-checks", "--dry-run", "--report-summary"]);
+            const packagesToPublish = JSON.parse(fs.readFileSync("pnpm-publish-summary.json", "utf8")).publishedPackages;
+            console.log("Packages to publish:");
+            console.log(packagesToPublish);
+            // Then clean up the file, or else pnpm won't want to publish
+            fs.rmSync("pnpm-publish-summary.json");
+
+            // for each package, compare to latest tag - if newer, also get "latest" otherwise just latest-major
+            console.log("Annotating packages for latest...");
+            for (const packageToPublish of packagesToPublish) {
+                const latestPackageVersion = await fetch(`https://registry.npmjs.org/${ packageToPublish.name }/latest`).then((res) => res.json()).then((parsedRes) => parsedRes.version);
+                if (latestPackageVersion === undefined) {
+                    // Just stashing the latest flag on the package object itself
+                    packageToPublish.latest = true;
+                    continue;
+                }
+                const latestPackageVersionParsed = latestPackageVersion.match(/^v(\d+)\.(\d+)\.(\d+)$/);
+                const latestPackageVersionInfo = {
+                    major: latestPackageVersionParsed[1],
+                    minor: latestPackageVersionParsed[2],
+                    patch: latestPackageVersionParsed[3],
+                };
+                const packageToPublishVersionParsed = packageToPublish.version.match(/^v(\d+)\.(\d+)\.(\d+)$/);
+                const packageToPublishVersionInfo = {
+                    major: packageToPublishVersionParsed[1],
+                    minor: packageToPublishVersionParsed[2],
+                    patch: packageToPublishVersionParsed[3],
+                };
+                if (
+                    packageToPublishVersionInfo.major > latestPackageVersionInfo.major
+                    || packageToPublishVersionInfo.major === latestPackageVersionInfo.major && packageToPublishVersionInfo.minor > latestPackageVersionInfo.minor
+                    || packageToPublishVersionInfo.major === latestPackageVersionInfo.major && packageToPublishVersionInfo.minor === latestPackageVersionInfo.minor && packageToPublishVersionInfo.patch > latestPackageVersionInfo.patch
+                ) {
+                    // Just stashing the latest flag on the package object itself
+                    packageToPublish.latest = true;
+                }
+            }
+            console.log("Finished annotating packages for latest:");
+            console.log(packagesToPublish);
+
+            // Actually do the publish.  Use tag latest-<major> for all packages.
+            console.log(`Starting publish${ dryRun ? " (dry run)" : "" }...`);
+            const versionedLatestTag = `latest-${ majorVersion }`;
+            console.log(`Will tag using ${ versionedLatestTag }`);
+            if (dryRun) {
+                await exec.exec("pnpm publish", ["-r", "--no-git-checks", "--tag", versionedLatestTag, "--dry-run"]);
+                // Add latest tag if appropriate
+                if (packagesToPublish.some((packageToPublish) => packageToPublish.latest)) {
+                    console.log("Would additionally add the latest tag to:")
+                }
+                for (const packageToPublish of packagesToPublish) {
+                    if (packageToPublish.latest) {
+                        console.log(`${ packageToPublish.name }@${ packageToPublish.version }`);
+                    }
+                }
+            } else {
+                await exec.exec("pnpm publish", ["-r", "--no-git-checks", "--tag", versionedLatestTag]);
+                // Add latest tag if appropriate
+                for (const packageToPublish of packagesToPublish) {
+                    if (packageToPublish.latest) {
+                        await exec.exec("pnpm dist-tag add", [`${ packageToPublish.name }@${ packageToPublish.version }`, "--tag", "latest"]);
+                    }
+                }
+            }
+
+  update_github_release:
+    name: Update Github release
+    runs-on: ubuntu-latest
+    needs: [publish]
+
+    steps:
+      - name: Update Github release
+        id: publish_to_npm
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const dryRun = ${{ inputs.dryRun }} === true;
+            const releaseTagString = "${{ inputs.releaseTag }}";
+            // Trim "v" from the front for the version (as string)
+            const releaseVersionString = releaseTagString.substring(1);
+            console.log(`Getting Github release for ${ releaseTagString }...`);
+            const { data: release } = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: releaseTagString,
+            });
+            console.log(release);
+            // Do trimming because editing using the website UI uses \r\n
+            const releaseBodyAsLines = release.body.trim().split("\n");
+            const packageEntryRegex = /^\* (.*): \(\[changelog\]\(.*\)\)$/;
+            let updatedBody = "";
+            console.log("Updating release body...");
+            for (const line of releaseBodyAsLines) {
+                const trimmedLine = line.trim();
+                const packageEntryMatch = trimmedLine.match(packageEntryRegex);
+                if (packageEntryMatch === null) {
+                    updatedBody += `${ trimmedLine }\n`;
+                } else {
+                    const packageName = packageEntryMatch[1];
+                    updatedBody += `${ trimmedLine } ([npm](https://www.npmjs.com/package/${ packageName }/v/${ releaseVersionString }))\n`;
+                }
+            }
+            console.log(updatedBody);
+            if (dryRun) {
+                console.log("Not updating release due to dry run.");
+            } else {
+                console.log("Updating release...");
+                await github.rest.repos.updateRelease({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    release_id: release.id,
+                    body: updatedBody,
+                });
+            }

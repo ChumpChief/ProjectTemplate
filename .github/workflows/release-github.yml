@@ -7,7 +7,7 @@
 #     https://github.com/orgs/community/discussions/14417#discussioncomment-2904984
 # - Automatic head branch deletion (Github repository setting)
 
-name: Release
+name: Create Github Release
 
 run-name: Release from ${{ github.ref_name }}${{ inputs.dryRun && ' (dry run)' || '' }}
 
