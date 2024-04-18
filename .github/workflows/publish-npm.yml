@@ -30,9 +30,11 @@ on:
         default: true
 
 jobs:
-  publish:
-    name: Publish to NPM
+  compute_dist_tags:
+    name: Compute dist tags
     runs-on: ubuntu-latest
+    outputs:
+      computedDistTags: ${{ steps.compute_dist_tags.outputs.result }}
 
     steps:
       - name: Checkout
@@ -47,31 +49,17 @@ jobs:
         uses: pnpm/action-setup@v3
         with:
           version: 9
-      # We need to install and run CI to generate the content that will go into the package.
-      # Doesn't hurt to have an extra layer of validation before publishing too.
       - name: Install dependencies
         run: |
           pnpm i
-      - name: Run CI checks
-        # Note that we must use the run verb, as pnpm ci is reserved.
-        run: |
-          pnpm run ci
-      # Here we'll need to get the NPM token
-      # - name: Generate app token
-      #   id: generate_app_token
-      #   uses: actions/create-github-app-token@v1
-      #   with:
-      #     app-id: ${{ vars.CHUMPCHIEF_RELEASE_BOT_APP_ID }}
-      #     private-key: ${{ secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY }}
-      - name: Publish to NPM${{ inputs.dryRun && ' (dry run)' || '' }}
-        id: publish_to_npm
+      # We don't need to run CI prior to computing dist tags, we'll do that in the publish step
+      - name: Compute dist tags
+        id: compute_dist_tags
         uses: actions/github-script@v7
         with:
-          # github-token: ${{ steps.generate_app_token.outputs.token }}
           script: |
             const fs = require("fs");
             const releaseTag = "${{ inputs.releaseTag }}";
-            const dryRun = ${{ inputs.dryRun }};
             const matchResult = releaseTag.match(/^v(\d+)\.(\d+)\.(\d+)$/);
 
             if (matchResult === null) {
@@ -121,39 +109,92 @@ jobs:
             console.log("Finished annotating packages for latest:");
             console.log(packagesToPublish);
 
+            const versionedLatestTag = `latest-${ majorVersion }`;
+            console.log(`Versioned latest tag: ${ versionedLatestTag }`);
+            return { versionedLatestTag, packagesToPublish };
+
+  publish:
+    name: Publish to NPM${{ inputs.dryRun && ' (dry run)' || '' }}
+    runs-on: ubuntu-latest
+    needs: [compute_dist_tags]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.releaseTag }}
+      - name: Node setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org/"
+      - name: pnpm setup
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      # We need to install and run CI to generate the content that will go into the package.
+      # Doesn't hurt to have an extra layer of validation before publishing too.
+      - name: Install dependencies
+        run: |
+          pnpm i
+      - name: Run CI checks
+        # Note that we must use the run verb, as pnpm ci is reserved.
+        run: |
+          pnpm run ci
+      - name: Publish to NPM${{ inputs.dryRun && ' (dry run)' || '' }}
+        id: publish_to_npm
+        uses: actions/github-script@v7
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        with:
+          script: |
+            const { versionedLatestTag } = ${{ needs.compute_dist_tags.outputs.computedDistTags }}
+            const dryRun = ${{ inputs.dryRun }};
+
             // Actually do the publish.  Use tag latest-<major> for all packages.
             console.log(`Starting publish${ dryRun ? " (dry run)" : "" }...`);
-            const versionedLatestTag = `latest-${ majorVersion }`;
             console.log(`Will tag using ${ versionedLatestTag }`);
             if (dryRun) {
-                await exec.exec("pnpm publish", ["-r", "--no-git-checks", "--tag", versionedLatestTag, "--dry-run"]);
-                // Add latest tag if appropriate
-                if (packagesToPublish.some((packageToPublish) => packageToPublish.latest)) {
-                    console.log("Would additionally add the latest tag to:")
-                }
-                for (const packageToPublish of packagesToPublish) {
-                    if (packageToPublish.latest) {
-                        console.log(`${ packageToPublish.name }@${ packageToPublish.version }`);
-                    }
-                }
+                await exec.exec("pnpm publish", ["-r", "--no-git-checks", "--tag", versionedLatestTag, "--access=public", "--dry-run"]);
             } else {
-                await exec.exec("pnpm publish", ["-r", "--no-git-checks", "--tag", versionedLatestTag]);
-                // Add latest tag if appropriate
-                for (const packageToPublish of packagesToPublish) {
-                    if (packageToPublish.latest) {
-                        await exec.exec("pnpm dist-tag add", [`${ packageToPublish.name }@${ packageToPublish.version }`, "--tag", "latest"]);
-                    }
+                await exec.exec("pnpm publish", ["-r", "--no-git-checks", "--tag", versionedLatestTag, "--access=public"]);
+            }
+      - name: Add latest tags${{ inputs.dryRun && ' (dry run)' || '' }}
+        id: add_latest_tags
+        uses: actions/github-script@v7
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        with:
+          script: |
+            const { packagesToPublish } = ${{ needs.compute_dist_tags.outputs.computedDistTags }}
+            const dryRun = ${{ inputs.dryRun }};
+
+            const newLatestPackages = packagesToPublish
+                .filter((package) => package.latest)
+                .map((package) => `${ package.name }@${ package.version }`);
+
+            console.log("New latest packages:");
+            for (const package of newLatestPackages) {
+                console.log(package);
+            }
+
+            if (dryRun) {
+                console.log("Dry run, skipping tagging");
+            } else {
+                console.log("Adding latest tags...")
+                for (const newLatestPackage of newLatestPackages) {
+                    await exec.exec("pnpm dist-tag add", [newLatestPackage, "--tag", "latest"]);
                 }
             }
 
   update_github_release:
-    name: Update Github release
+    name: Update Github release${{ inputs.dryRun && ' (dry run)' || '' }}
     runs-on: ubuntu-latest
     needs: [publish]
 
     steps:
       - name: Update Github release
-        id: publish_to_npm
+        id: update_github_release
         uses: actions/github-script@v7
         with:
           script: |
