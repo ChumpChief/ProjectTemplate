@@ -21,10 +21,10 @@ importers:
 
   examples:
     dependencies:
-      package1:
+      '@chumpchief/package1':
         specifier: workspace:*
         version: link:../packages/package1
-      package2:
+      '@chumpchief/package2':
         specifier: workspace:*
         version: link:../packages/package2
       react:
@@ -103,7 +103,7 @@ importers:
 
   packages/package2:
     dependencies:
-      package1:
+      '@chumpchief/package1':
         specifier: workspace:*
         version: link:../package1
     devDependencies:
