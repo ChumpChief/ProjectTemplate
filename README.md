@@ -8,7 +8,7 @@ This repo has the following prerequisites:
 
 * The latest LTS version of Node (currently 20) is installed.
     * If you are using nvm, you can run `nvm install` or `nvm use` to install or use the correct version, respectively.
-* The latest version of `pnpm` (currently 8) is globally installed.
+* The latest version of `pnpm` (currently 9) is globally installed.
 
 Run `pnpm i` from the project root to install dependencies.
 
@@ -24,9 +24,9 @@ All commands should be run from the project root.
 * `pnpm start` - Start a dev server running the examples
 * `pnpm changeset` - Add a changeset
 
-## Recommended setup
+## Setup
 
-After establishing a new repository using this template, the following additional steps are recommended:
+After establishing a new repository using this template, take the following additional steps:
 * Set up a branch protection ruleset for `main` and `release/*`.  In addition to the default protections, add:
     * Require linear history
     * Require a pull request before merging
@@ -57,9 +57,9 @@ The `examples` directory contains a single package with all examples.  When runn
 ## Github
 
 This repo provides Github Actions for:
-1. CI - Runs all checks against the repo on push and PRs, and is appropriate to use as a blocking status check.
-1. Release (IN PROGRESS) - Consumes changesets, bumps versions, produces changelogs, creates git tags, and creates Github releases.  May eventually publish packages to Github and npm.
-    * This action has further prerequisite setup.  See [release.yml](./.github/workflows/release.yml) for details.
+* CI - Runs all checks against the repo on push and PRs, and is appropriate to use as a blocking status check.
+* Create Github Release - For a given branch: consumes changesets, bumps versions, produces changelogs, creates a git tag, and creates a Github release.
+* Publish to NPM (IN PROGRESS) - For a given release tag: publishes to NPM
 
 ## Technology choices
 
