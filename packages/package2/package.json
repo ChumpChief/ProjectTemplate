@@ -7,7 +7,7 @@
         "build": "tsc",
         "clean": "rm -rf built",
         "lint": "eslint src",
-        "test": "NODE_OPTIONS=--experimental-vm-modules jest built/.*.spec.js"
+        "test": "NODE_OPTIONS=--experimental-vm-modules jest built/.*.test.js"
     },
     "keywords": [],
     "author": "Matt Rakow",
