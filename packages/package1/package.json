@@ -28,5 +28,6 @@
         "type": "git",
         "url": "https://github.com/ChumpChief/ProjectTemplate.git",
         "directory": "packages/package1"
-    }
+    },
+    "homepage": "https://github.com/ChumpChief/ProjectTemplate#readme"
 }
