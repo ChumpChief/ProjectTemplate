@@ -5,6 +5,11 @@
 
 module.exports = {
     rules: {
-        
+        "@typescript-eslint/restrict-template-expressions": ["error", {
+            allowBoolean: true,
+            allowNullish: true,
+            allowNumber: true,
+            allowRegExp: true,
+        }],
     }
 };
