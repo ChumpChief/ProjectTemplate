@@ -39,7 +39,7 @@ After establishing a new repository using this template, take the following addi
     * `secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY`
     * `secrets.NPM_AUTH_TOKEN`
 
-## Structure
+## Repo structure
 
 The repo is divided into three high-level directories:  `build`, `packages`, and `examples`.
 

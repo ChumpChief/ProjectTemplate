@@ -3,6 +3,8 @@
     "version": "0.0.0",
     "description": "",
     "main": "built/index.js",
+    "types": "built/index.d.ts",
+    "sideEffects": false,
     "scripts": {
         "build": "tsc",
         "clean": "rm -rf built",
@@ -25,5 +27,11 @@
         "jest": "^29.7.0",
         "tsconfig-shared": "workspace:*",
         "typescript": "^5.4.5"
-    }
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ChumpChief/ProjectTemplate.git",
+        "directory": "packages/package2"
+    },
+    "homepage": "https://github.com/ChumpChief/ProjectTemplate#readme"
 }

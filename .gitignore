@@ -1,6 +1,6 @@
 .DS_Store
 .eslintcache
-.nx/cache
+.nx
 built
 node_modules
 webpacked
