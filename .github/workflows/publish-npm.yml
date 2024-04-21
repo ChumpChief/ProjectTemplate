@@ -58,6 +58,7 @@ jobs:
           script: |
             const fs = require("fs");
             const releaseTag = "${{ inputs.releaseTag }}";
+            // Note the tag name includes a leading "v"
             const matchResult = releaseTag.match(/^v(\d+)\.(\d+)\.(\d+)$/);
 
             if (matchResult === null) {
@@ -83,13 +84,13 @@ jobs:
                     packageToPublish.latest = true;
                     continue;
                 }
-                const latestPackageVersionParsed = latestPackageVersion.match(/^v(\d+)\.(\d+)\.(\d+)$/);
+                const latestPackageVersionParsed = latestPackageVersion.match(/^(\d+)\.(\d+)\.(\d+)$/);
                 const latestPackageVersionInfo = {
                     major: latestPackageVersionParsed[1],
                     minor: latestPackageVersionParsed[2],
                     patch: latestPackageVersionParsed[3],
                 };
-                const packageToPublishVersionParsed = packageToPublish.version.match(/^v(\d+)\.(\d+)\.(\d+)$/);
+                const packageToPublishVersionParsed = packageToPublish.version.match(/^(\d+)\.(\d+)\.(\d+)$/);
                 const packageToPublishVersionInfo = {
                     major: packageToPublishVersionParsed[1],
                     minor: packageToPublishVersionParsed[2],
