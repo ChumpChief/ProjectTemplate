@@ -15,7 +15,7 @@ module.exports = {
     },
     rules: {
         // Couple warns that I'm not ready to be errors
-        "@typescript-eslint/consistent-type-definitions": "warn",
+        "@typescript-eslint/consistent-type-definitions": ["warn", "type"],
         "@typescript-eslint/no-unnecessary-condition": "warn",
         "@typescript-eslint/prefer-readonly": "error",
         // Left as warn, for sync implementations complying with async interfaces

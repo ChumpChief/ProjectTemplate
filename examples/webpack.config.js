@@ -7,7 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // const require = createRequire(import.meta.url);
 
 export default {
-    devtool: "inline-source-map",
+    devtool: "source-map",
     entry: {
         "index": {
             import: "./src/index.tsx",
