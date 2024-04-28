@@ -16,14 +16,14 @@
     "dependencies": {
         "@chumpchief/package1": "workspace:*",
         "@chumpchief/package2": "workspace:*",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0"
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1"
     },
     "devDependencies": {
-        "@types/react": "^18.2.79",
-        "@types/react-dom": "^18.2.25",
-        "@typescript-eslint/eslint-plugin": "^7.7.0",
-        "@typescript-eslint/parser": "^7.7.0",
+        "@types/react": "^18.3.1",
+        "@types/react-dom": "^18.3.0",
+        "@typescript-eslint/eslint-plugin": "^7.7.1",
+        "@typescript-eslint/parser": "^7.7.1",
         "eslint": "^8.57.0",
         "eslint-config-shared": "workspace:*",
         "html-webpack-plugin": "^5.6.0",
@@ -32,6 +32,6 @@
         "typescript": "^5.4.5",
         "webpack": "^5.91.0",
         "webpack-cli": "^5.1.4",
-        "webpack-dev-server": "^4.15.2"
+        "webpack-dev-server": "^5.0.4"
     }
 }
