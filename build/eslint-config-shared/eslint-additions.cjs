@@ -46,7 +46,7 @@ module.exports = {
         "grouped-accessor-pairs": "error", // formatting?
         "guard-for-in": "error",
         "id-denylist": "error",
-        "id-length": ["error", { "exceptions": ["x", "y", "z", "w", "i", "j", "k"] }],
+        // "id-length": ["error", { "exceptions": ["x", "y", "z", "w", "i", "j", "k"] }],
         // Don't think I like this one anyway
         // "init-declarations": "error", // Disabled by typescript-eslint
         "logical-assignment-operators": "error",
