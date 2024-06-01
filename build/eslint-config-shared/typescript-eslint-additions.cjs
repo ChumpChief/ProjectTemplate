@@ -5,6 +5,7 @@
 
 module.exports = {
     rules: {
+        "@typescript-eslint/no-unnecessary-condition": "error",
         "@typescript-eslint/restrict-template-expressions": ["error", {
             allowBoolean: true,
             allowNullish: true,
