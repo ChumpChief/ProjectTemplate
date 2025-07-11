@@ -6,9 +6,10 @@ This repo is meant to be used as a template for typescript monorepo projects.  I
 
 This repo has the following prerequisites:
 
-* The latest LTS version of Node (currently 20) is installed.
+* The latest LTS version of Node (currently 22) is installed.
     * If you are using nvm, you can run `nvm install` or `nvm use` to install or use the correct version, respectively.
-* The latest version of `pnpm` (currently 9) is globally installed.
+* The latest version of `pnpm` (currently 10) is globally installed.
+    * Corepack is also currently an option, but note it is [planned to be removed from the default Node installation](https://github.com/nodejs/TSC/pull/1697#issuecomment-2737093616).
 
 Run `pnpm i` from the project root to install dependencies.
 

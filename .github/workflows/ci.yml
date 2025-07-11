@@ -24,12 +24,12 @@ jobs:
       - name: Node setup
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: pnpm setup
         uses: pnpm/action-setup@v3
         with:
-          version: 9
+          version: 10
 
       - name: Install dependencies
         run: |

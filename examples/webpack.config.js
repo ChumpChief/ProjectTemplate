@@ -23,22 +23,26 @@ export default {
     },
     mode: "development",
     module: {
-        rules: [{
-            test: /\.tsx?$/,
-            use: [{
-                loader: "ts-loader",
-                options: {
-                    projectReferences: true,
-                },
-            }],
-        }]
+        rules: [
+            {
+                test: /\.tsx?$/,
+                use: [
+                    {
+                        loader: "ts-loader",
+                        options: {
+                            projectReferences: true,
+                        },
+                    },
+                ],
+            },
+        ],
     },
     output: {
+        clean: true,
         filename: "[name].bundle.js",
-        path: resolve(__dirname, "webpacked"),
         library: "[name]",
         libraryTarget: "umd",
-        clean: true,
+        path: resolve(__dirname, "webpacked"),
     },
     plugins: [
         new HtmlWebpackPlugin({
@@ -57,11 +61,11 @@ export default {
         }),
     ],
     resolve: {
-        extensions: [".ts", ".tsx", ".js"],
         extensionAlias: {
             ".js": [".ts", ".tsx", ".js"],
             ".mjs": [".mts", ".mtsx", ".mjs"],
         },
+        extensions: [".ts", ".tsx", ".js"],
         // fallback: { "events": require.resolve("events/") }
     },
-}
+};

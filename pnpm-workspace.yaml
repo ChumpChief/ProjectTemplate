@@ -1,4 +1,7 @@
 packages:
-    - "build/**/*"
-    - "packages/**/*"
-    - "examples"
+  - build/**/*
+  - packages/**/*
+  - examples
+
+onlyBuiltDependencies:
+  - nx
