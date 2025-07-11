@@ -1,8 +1,9 @@
 import { describe, expect, test } from "@jest/globals";
-import { bar1 } from "../bar1.js";
 
-describe("bar1", function() {
+import { bar2 } from "../bar2.js";
+
+describe("bar2", function() {
     test("Is correct", function() {
-        expect(bar1).toBe(1);
+        expect(bar2).toBe(2);
     });
 });

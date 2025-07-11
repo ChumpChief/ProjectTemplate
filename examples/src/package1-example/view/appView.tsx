@@ -1,5 +1,6 @@
-import { foo1, foo2, bar1, bar2 } from "@chumpchief/package1";
 import type { FC } from "react";
+
+import { bar1, bar2, foo1, foo2 } from "@chumpchief/package1";
 
 export const AppView: FC = () => (
     <ul>
