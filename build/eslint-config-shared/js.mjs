@@ -10,7 +10,7 @@ export const jsConfigs = [
             "block-scoped-var": "error",
             "camelcase": "error",
             // "capitalized-comments": "error",
-            "class-methods-use-this": "error", // Might need to warn instead to conform with interfaces
+            // "class-methods-use-this": "error", // Disabled by tseslint's class-methods-use-this
             "complexity": "error",
             "consistent-return": "error",
             "consistent-this": "error",

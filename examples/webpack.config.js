@@ -38,11 +38,11 @@ export default {
         ],
     },
     output: {
-        clean: true,
         filename: "[name].bundle.js",
+        path: resolve(__dirname, "webpacked"),
         library: "[name]",
         libraryTarget: "umd",
-        path: resolve(__dirname, "webpacked"),
+        clean: true,
     },
     plugins: [
         new HtmlWebpackPlugin({
@@ -61,11 +61,11 @@ export default {
         }),
     ],
     resolve: {
+        extensions: [".ts", ".tsx", ".js"],
         extensionAlias: {
             ".js": [".ts", ".tsx", ".js"],
             ".mjs": [".mts", ".mtsx", ".mjs"],
         },
-        extensions: [".ts", ".tsx", ".js"],
         // fallback: { "events": require.resolve("events/") }
     },
 };

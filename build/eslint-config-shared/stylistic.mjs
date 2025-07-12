@@ -20,7 +20,7 @@ export const stylisticConfigs = [
             // "@stylistic/eol-last": "error", // Enabled in recommended
             "@stylistic/function-call-argument-newline": ["error", "consistent"],
             "@stylistic/function-call-spacing": "error",
-            "@stylistic/function-paren-newline": "error",
+            "@stylistic/function-paren-newline": ["error", "multiline-arguments"],
             // "@stylistic/generator-star-spacing": "error", // Enabled in recommended
             // "@stylistic/implicit-arrow-linebreak": "error",
             "@stylistic/indent": ["error", 4], // Enabled in recommended
@@ -30,12 +30,12 @@ export const stylisticConfigs = [
             // "@stylistic/jsx-closing-tag-location": "error", // Enabled in recommended
             // "@stylistic/jsx-curly-brace-presence": "error", // Enabled in recommended
             // "@stylistic/jsx-curly-newline": "error", // Enabled in recommended
-            // "@stylistic/jsx-curly-spacing": "error", // Enabled in recommended
+            "@stylistic/jsx-curly-spacing": ["error", { "when": "always" }], // Enabled in recommended
             // "@stylistic/jsx-equals-spacing": "error", // Enabled in recommended
             // "@stylistic/jsx-first-prop-new-line": "error", // Enabled in recommended
             // "@stylistic/jsx-function-call-newline": "error", // Enabled in recommended
             // "@stylistic/jsx-indent": "error",
-            // "@stylistic/jsx-indent-props": "error", // Enabled in recommended
+            "@stylistic/jsx-indent-props": ["error", 4], // Enabled in recommended
             // "@stylistic/jsx-max-props-per-line": "error", // Enabled in recommended
             // "@stylistic/jsx-newline": "error",
             "@stylistic/jsx-one-expression-per-line": "off", // Enabled in recommended
@@ -51,10 +51,23 @@ export const stylisticConfigs = [
             // "@stylistic/line-comment-position": "error",
             "@stylistic/linebreak-style": "error",
             // "@stylistic/lines-around-comment": "error",
-            // "@stylistic/lines-between-class-members": "error", // Enabled in recommended
+            "@stylistic/lines-between-class-members": "off", // Enabled in recommended
             // "@stylistic/max-len": "error",
-            // "@stylistic/max-statements-per-line": "error", // Enabled in recommended
-            // "@stylistic/member-delimiter-style": "error", // Enabled in recommended
+            "@stylistic/max-statements-per-line": "off", // Enabled in recommended
+            "@stylistic/member-delimiter-style": [
+                "error",
+                {
+                    "multiline": {
+                        "delimiter": "semi",
+                        "requireLast": true
+                    },
+                    "singleline": {
+                        "delimiter": "semi",
+                        "requireLast": false
+                    },
+                    "multilineDetection": "brackets"
+                },
+            ], // Enabled in recommended
             // "@stylistic/multiline-comment-style": "error",
             // "@stylistic/multiline-ternary": "error", // Enabled in recommended
             // "@stylistic/new-parens": "error", // Enabled in recommended

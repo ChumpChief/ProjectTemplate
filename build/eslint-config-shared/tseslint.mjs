@@ -45,7 +45,7 @@ export const tseslintConfigs = [
             // "@typescript-eslint/consistent-indexed-object-style": "error", // Enabled in stylistic
             // "@typescript-eslint/consistent-return": "error",
             // "@typescript-eslint/consistent-type-assertions": "error", // Enabled in stylistic
-            // "@typescript-eslint/consistent-type-definitions": "error", // Enabled in stylistic
+            "@typescript-eslint/consistent-type-definitions": ["error", "type"], // Enabled in stylistic
             // "@typescript-eslint/consistent-type-exports": "error",
             // "@typescript-eslint/consistent-type-imports": "error",
             "@typescript-eslint/default-param-last": "error",
@@ -53,7 +53,7 @@ export const tseslintConfigs = [
             // "@typescript-eslint/explicit-function-return-type": "error",
             // "@typescript-eslint/explicit-member-accessibility": "error",
             // "@typescript-eslint/explicit-module-boundary-types": "error",
-            "@typescript-eslint/init-declarations": "error",
+            // "@typescript-eslint/init-declarations": "error",
             // "@typescript-eslint/max-params": "error",
             // "@typescript-eslint/member-ordering": "error",
             // "@typescript-eslint/method-signature-style": "error",
