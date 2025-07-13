@@ -1,3 +1,5 @@
+![CI status badge](https://github.com/ChumpChief/ProjectTemplate/actions/workflows/ci.yml/badge.svg)
+
 # Project Template
 
 This repo is meant to be used as a template for typescript monorepo projects.  It contains placeholder packages to demonstrate usage.
@@ -132,5 +134,3 @@ This repo is opinionated about its technology choices.  Specifically:
 * Trunk-based development (optionally with release branches)
 * Synchronized version numbers across packages
 * MacOS/Linux development environment
-
-![CI status badge](https://github.com/ChumpChief/ProjectTemplate/actions/workflows/ci.yml/badge.svg)
