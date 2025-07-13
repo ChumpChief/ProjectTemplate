@@ -10,7 +10,7 @@ export default {
     devtool: "source-map",
     entry: {
         "index": {
-            import: "./src/index.tsx",
+            import: "./src/index.ts",
         },
         "package1-example": {
             filename: "package1-example/[name].bundle.js",
@@ -47,17 +47,17 @@ export default {
     plugins: [
         new HtmlWebpackPlugin({
             chunks: ["index"],
-            template: "./src/index.html",
+            title: "Examples",
         }),
         new HtmlWebpackPlugin({
             chunks: ["package1-example"],
             filename: "package1-example/index.html",
-            template: "./src/package1-example/index.html",
+            title: "package1",
         }),
         new HtmlWebpackPlugin({
             chunks: ["package2-example"],
             filename: "package2-example/index.html",
-            template: "./src/package2-example/index.html",
+            title: "package2",
         }),
     ],
     resolve: {
