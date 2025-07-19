@@ -18,7 +18,7 @@
     "dependencies": {},
     "devDependencies": {
         "@jest/globals": "^30.0.4",
-        "eslint": "^9.30.1",
+        "eslint": "^9.31.0",
         "eslint-config-shared": "workspace:*",
         "jest": "^30.0.4",
         "tsconfig-shared": "workspace:*",
