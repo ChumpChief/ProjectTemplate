@@ -67,7 +67,7 @@ jobs:
       - name: Node setup
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
       - name: pnpm setup
         uses: pnpm/action-setup@v3
       - name: Install dependencies
