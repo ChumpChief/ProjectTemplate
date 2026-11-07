@@ -227,7 +227,12 @@ Do not perform this step without the user's explicit approval.
 
 ### Chunks
 
-- [ ] Chunk 1 — safe patches and minors
+- `bc12aac` (2026-11-07): **Chunk 1 complete** — react 19.3.1, jest 30.5.2,
+  webpack 5.112.2, @stylistic 5.10.0, typescript-eslint 8.72.1, etc. (all targets
+  in the plan were still the npm latest). jest 30.5 pulls `@parcel/watcher` via
+  jest-haste-map; added to `allowBuilds`. Full gate green. No blockers.
+
+- [x] Chunk 1 — safe patches and minors
 - [ ] Chunk 2 — ESLint 10 stack
 - [ ] Chunk 3 — webpack tooling majors
 - [x] Chunk 4 — nx 21 → 24 (done in `c320c10` as a pnpm prerequisite; see above)
