@@ -6,7 +6,11 @@ export const reactConfigs = [
     {
         settings: {
             react: {
-                version: "detect",
+                // Explicit version instead of "detect": react version detection calls an
+                // API removed in ESLint 10 (crashes react/display-name loading on the
+                // current eslint-plugin-react, see jsx-eslint/eslint-plugin-react#3970).
+                // Bump this in lockstep with the react major version.
+                version: "19.x",
             },
         },
     },
