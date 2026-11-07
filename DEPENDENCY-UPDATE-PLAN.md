@@ -89,7 +89,7 @@ without justification in the commit message.
 
 ---
 
-## Chunk 3 — webpack tooling majors (webpack-cli 7, webpack-dev-server 6)
+## Chunk 3 — webpack tooling majors (webpack-cli 7, webpack-dev-server 6) — DONE (see Progress log)
 
 | Package | From | To | Where |
 |---|---|---|---|
@@ -247,9 +247,20 @@ Do not perform this step without the user's explicit approval.
   perfectionist v5 defaults produce no violations on this codebase. Full gate
   green (build/lint/test/webpack x3).
 
+- `6b88260` (2026-11-07): **Chunk 3 complete** — webpack-cli 7.3.1,
+  webpack-dev-server 6.1.0. One script change: `start` is now `webpack serve`
+  (dev-server v6 removed its CLI; the old bin only delegates to webpack-cli
+  serve, so the canonical form is preferred). webpack-cli 7.2.0+ is required
+  to peer dev-server 6 (7.0.x/7.1.x cap at ^5.0.0); 7.3.0+ drives dev-server 6
+  as a compiler plugin. No `webpack.config.js` changes needed (no devServer
+  section; none of the removed v6 options in use). Verified in a scratch-copy
+  dry-run and in-tree: build output byte-identical to the previous toolchain,
+  dev server boots in ~3s with live reload working, full gate green. No new
+  peer warnings (all new webpack-cli peers are optional).
+
 - [x] Chunk 1 — safe patches and minors
 - [x] Chunk 2 — ESLint 10 stack
-- [ ] Chunk 3 — webpack tooling majors
+- [x] Chunk 3 — webpack tooling majors
 - [x] Chunk 4 — nx 21 → 24 (done in `c320c10` as a pnpm prerequisite; see above)
 - [ ] Chunk 5 — @changesets/cli 2 → 3
 - [ ] Chunk 6 — TypeScript 5 → 7
