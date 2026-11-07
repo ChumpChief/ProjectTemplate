@@ -1,26 +1,41 @@
 {
-    "targetDefaults": {
-        "build": {
-            "dependsOn": ["^build"],
-            "outputs": ["{projectRoot}/built"],
-            "cache": true
-        },
-        "lint": {
-            "dependsOn": ["^build"],
-            "cache": true
-        },
-        "test": {
-            "dependsOn": ["build"],
-            "cache": true
-        },
-        "webpack": {
-            "dependsOn": ["^build"],
-            "outputs": ["{projectRoot}/webpacked"],
-            "cache": true
-        },
-        "start": {
-            "dependsOn": ["^build"]
-        }
+  "targetDefaults": {
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "{projectRoot}/built"
+      ],
+      "cache": true
     },
-    "defaultBase": "main"
+    "lint": {
+      "dependsOn": [
+        "^build"
+      ],
+      "cache": true
+    },
+    "test": {
+      "dependsOn": [
+        "build"
+      ],
+      "cache": true
+    },
+    "webpack": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "{projectRoot}/webpacked"
+      ],
+      "cache": true
+    },
+    "start": {
+      "dependsOn": [
+        "^build"
+      ]
+    }
+  },
+  "defaultBase": "main",
+  "analytics": false
 }
