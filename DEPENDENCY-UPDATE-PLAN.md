@@ -60,7 +60,7 @@ Exit criteria: all `pnpm run ci` targets green, lockfile updated, no new peer-de
 
 ---
 
-## Chunk 2 — ESLint 10 stack (major)
+## Chunk 2 — ESLint 10 stack (major) — DONE (see Progress log)
 
 Bumps the lint toolchain to ESLint 10. `eslint-plugin-perfectionist` 5.x is assumed to
 target the modern toolchain — verify its peer deps after install.
@@ -232,8 +232,23 @@ Do not perform this step without the user's explicit approval.
   in the plan were still the npm latest). jest 30.5 pulls `@parcel/watcher` via
   jest-haste-map; added to `allowBuilds`. Full gate green. No blockers.
 
+- `b98a678` (2026-11-07): **Chunk 2 complete** — eslint 10.14.0, @eslint/js 10.0.1,
+  eslint-plugin-perfectionist 5.13.0 (ESM-only; no deprecated v4 options in use),
+  eslint added as a devDependency of eslint-config-shared so @eslint/js's peer
+  resolves in-package. Two deviations, both verified empirically (dry-run in a
+  scratch copy first): (1) `react.mjs` react version setting changed
+  "detect" -> "19.x" — "detect" routes through an API removed in ESLint 10 and
+  crashes `react/display-name` rule loading on eslint-plugin-react 7.37.5
+  (jsx-eslint/eslint-plugin-react#3970); an explicit version bypasses the broken
+  path and is deterministic. (2) One new peer warning accepted: eslint-plugin-react
+  7.37.5 peer range caps at eslint ^9.7 (10-compatibility PR #4022 still pending
+  upstream); all enabled react rules load and lint correctly under ESLint 10. No
+  config or rule renames were needed; ESLint 10's new recommended rules and the
+  perfectionist v5 defaults produce no violations on this codebase. Full gate
+  green (build/lint/test/webpack x3).
+
 - [x] Chunk 1 — safe patches and minors
-- [ ] Chunk 2 — ESLint 10 stack
+- [x] Chunk 2 — ESLint 10 stack
 - [ ] Chunk 3 — webpack tooling majors
 - [x] Chunk 4 — nx 21 → 24 (done in `c320c10` as a pnpm prerequisite; see above)
 - [ ] Chunk 5 — @changesets/cli 2 → 3
