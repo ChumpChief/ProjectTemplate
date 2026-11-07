@@ -17,10 +17,10 @@
     "type": "module",
     "dependencies": {},
     "devDependencies": {
-        "@jest/globals": "^30.0.4",
+        "@jest/globals": "^30.5.2",
         "eslint": "^9.31.0",
         "eslint-config-shared": "workspace:*",
-        "jest": "^30.0.4",
+        "jest": "^30.5.2",
         "tsconfig-shared": "workspace:*",
         "typescript": "^5.8.3"
     },

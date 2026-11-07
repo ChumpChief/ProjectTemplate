@@ -17,21 +17,21 @@
     "dependencies": {
         "@chumpchief/package1": "workspace:*",
         "@chumpchief/package2": "workspace:*",
-        "react": "^19.1.0",
-        "react-dom": "^19.1.0"
+        "react": "^19.3.1",
+        "react-dom": "^19.3.1"
     },
     "devDependencies": {
-        "@jest/globals": "^30.0.4",
-        "@types/react": "^19.1.8",
-        "@types/react-dom": "^19.1.6",
+        "@jest/globals": "^30.5.2",
+        "@types/react": "^19.3.0",
+        "@types/react-dom": "^19.3.0",
         "eslint": "^9.31.0",
         "eslint-config-shared": "workspace:*",
-        "html-webpack-plugin": "^5.6.3",
-        "jest": "^30.0.4",
-        "ts-loader": "^9.5.2",
+        "html-webpack-plugin": "^5.6.8",
+        "jest": "^30.5.2",
+        "ts-loader": "^9.6.2",
         "tsconfig-shared": "workspace:*",
         "typescript": "^5.8.3",
-        "webpack": "^5.100.0",
+        "webpack": "^5.112.2",
         "webpack-cli": "^6.0.1",
         "webpack-dev-server": "^5.2.2"
     }
