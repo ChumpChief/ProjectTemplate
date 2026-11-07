@@ -45,8 +45,6 @@ jobs:
           node-version: 22
       - name: pnpm setup
         uses: pnpm/action-setup@v3
-        with:
-          version: 10
       - name: Install dependencies
         run: |
           pnpm i
@@ -125,12 +123,10 @@ jobs:
       - name: Node setup
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           registry-url: "https://registry.npmjs.org/"
       - name: pnpm setup
         uses: pnpm/action-setup@v3
-        with:
-          version: 9
       # We need to install and run CI to generate the content that will go into the package.
       # Doesn't hurt to have an extra layer of validation before publishing too.
       - name: Install dependencies
