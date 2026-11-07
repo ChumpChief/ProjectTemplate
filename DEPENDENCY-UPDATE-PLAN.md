@@ -9,7 +9,9 @@ low-risk (patch/minor) to high-risk (major version jumps with breaking changes).
 - All chunks happen **on the same topic branch** (e.g. `deps/update-to-latest`).
   The first agent creates it from `main`; subsequent agents continue on it.
 - After finishing a chunk, the agent must leave the tree **clean and green**:
-  `pnpm install` (lockfile updated), `pnpm ci` (build + lint + test + webpack) all pass.
+  `pnpm install` (lockfile updated), `pnpm run ci` (build + lint + test + webpack) all
+  pass. Note the `run` verb is required: pnpm 11+ has a built-in `pnpm ci`
+  (clean install), which shadows the repo's `ci` script.
 - Commit message format: `deps: <chunk name> — <one-line summary> (chunk N/6)`
 - If a chunk hits a blocker that can't be fixed without scope creep (e.g. a breaking
   change in a *different* package's API surface), stop, commit what is green, and leave
@@ -21,6 +23,10 @@ low-risk (patch/minor) to high-risk (major version jumps with breaking changes).
 
 Newest-available versions were checked against npm. Deps already up to date:
 `eslint-plugin-react` @ ^7.37.5. Workspace deps (`workspace:*`) are never touched.
+
+Toolchain (pnpm, nx, Node) was updated separately before Chunk 1 started — see the
+Progress log. Chunk 4 (nx) was pulled forward as a prerequisite of the pnpm bump and
+is already complete.
 
 ---
 
@@ -45,12 +51,12 @@ Low risk: same major, semver-compatible. Expected to be nearly mechanical.
 Steps:
 1. Check out the existing topic branch `deps/update-to-latest` (already created from `main`).
 2. Edit the `package.json` files above.
-3. `pnpm install`, then `pnpm ci`.
+3. `pnpm install`, then `pnpm run ci`.
 4. Fix anything that breaks (unlikely; check jest 30.5 and React 19.3 changelogs for
    deprecation warnings).
 5. Commit.
 
-Exit criteria: all `pnpm ci` targets green, lockfile updated, no new peer-dependency warnings.
+Exit criteria: all `pnpm run ci` targets green, lockfile updated, no new peer-dependency warnings.
 
 ---
 
@@ -72,11 +78,11 @@ Steps:
    `typescript-eslint` from Chunk 1 vs ESLint 10). If `typescript-eslint` 8.72.1 has an
    unmet peer on eslint 10, bump it to the newest compatible release within 8.x, or to
    the release that declares eslint 10 support.
-4. `pnpm lint` — expect possible rule/plugin renames or config-shape changes. Update
-   `build/eslint-config-shared/index.mjs` and any per-package eslint configs as needed.
-   Goal: lint passes with the same effective rules (avoid silently disabling rules;
-   prefer porting them to new names).
-5. `pnpm ci` for the full gate, then commit.
+4. `pnpm run lint` — expect possible rule/plugin renames or config-shape changes.
+   Update `build/eslint-config-shared/index.mjs` and any per-package eslint configs as
+   needed. Goal: lint passes with the same effective rules (avoid silently disabling
+   rules; prefer porting them to new names).
+5. `pnpm run ci` for the full gate, then commit.
 
 Exit criteria: lint green with no new `--no-*` suppressions or disabled rules added
 without justification in the commit message.
@@ -101,14 +107,14 @@ Steps:
      manually or via curl; then shut it down).
 5. Update `examples/webpack.config.*` for any renamed options, and the
    `start`/`webpack` scripts in `examples/package.json` if CLI flags changed.
-6. `pnpm ci`, then commit.
+6. `pnpm run ci`, then commit.
 
 Exit criteria: production webpack build byte-comparable (same entry/asset structure),
 dev server starts cleanly.
 
 ---
 
-## Chunk 4 — nx 21 → 24 (three majors)
+## Chunk 4 — nx 21 → 24 (three majors) — DONE (pulled forward, see Progress log)
 
 | Package | From | To | Where |
 |---|---|---|---|
@@ -123,10 +129,10 @@ Steps:
    exists; otherwise apply the breaking changes by hand to `nx.json`,
    `project.json` files, and any `executors`/`generators` references.
 5. Verify **every** root script still works: `pnpm build`, `pnpm lint`, `pnpm test`,
-   `pnpm webpack`, `pnpm ci`, and `pnpm nx show projects`.
+   `pnpm webpack`, `pnpm run ci`, and `pnpm nx show projects`.
 6. Commit (include migration notes in the commit body).
 
-Exit criteria: `pnpm ci` green, `nx reset` works, no deprecated-config warnings in output.
+Exit criteria: `pnpm run ci` green, `nx reset` works, no deprecated-config warnings in output.
 
 ---
 
@@ -143,7 +149,7 @@ Steps:
 3. Port `.changeset/config.json` if the schema changed.
 4. Smoke test: `pnpm exec changeset status` runs without error; if trivial, do a
    dry `pnpm exec changeset version` and `git restore` the result.
-5. `pnpm ci`, then commit.
+5. `pnpm run ci`, then commit.
 
 Exit criteria: `changeset status` clean, config validated.
 
@@ -169,16 +175,16 @@ Steps:
 4. `pnpm build` — expect strictness/diagnostic changes. Fix source or
    `build/tsconfig-shared` as needed. Do not blanket-disable new checks; fix code, or
    document a deliberate `// @ts-expect-error` per case.
-5. `pnpm ci` (lint via typescript-eslint must also pass on TS 7).
+5. `pnpm run ci` (lint via typescript-eslint must also pass on TS 7).
 6. Commit (summarize source changes required by the new compiler).
 
-Exit criteria: `pnpm ci` green on TS 7 (or documented fallback to latest 5.x).
+Exit criteria: `pnpm run ci` green on TS 7 (or documented fallback to latest 5.x).
 
 ---
 
 ## Final handoff (after Chunk 6)
 
-- Run `pnpm ci` one last time from a clean checkout of the branch.
+- Run `pnpm run ci` one last time from a clean checkout of the branch.
 - Squash or leave history as-is per repo convention; update this file's Progress log
   with the final state.
 - Do **not** merge or open a PR without explicit user permission.
@@ -196,9 +202,34 @@ Do not perform this step without the user's explicit approval.
 
 <!-- One line per completed chunk: date, agent, commit hash, notes/blockers -->
 
+### Toolchain / infrastructure (before Chunk 1, 2026-11-06..07)
+
+- pnpm 10.13.1 → 12.18.0 (commit `0718c36` superseded by `c320c10`). pnpm 12
+  rewrites `pnpm-lock.yaml` as a two-document YAML stream (env document recording
+  the pinned package manager), which nx 21.3.0's single-document parser cannot read.
+  No pnpm setting suppresses the env document, so the nx bump (Chunk 4) was pulled
+  forward into the same work. `pnpm-workspace.yaml` `onlyBuiltDependencies` was
+  rewritten by pnpm 12 to the `allowBuilds` format (nx, unrs-resolver).
+- `c320c10` (2026-11-07): nx 21.3.0 → 24.0.5 — **Chunk 4 complete**. No migration
+  needed: the repo uses only the core `nx` package with script-based targets (no
+  `@nx/*` plugins, no `project.json` files, no executors). Verified `pnpm nx show
+  projects` and the full `pnpm run ci` gate.
+- `d640273`: `engines.pnpm` >=10 → >=12.
+- `20c1a35`: workflows explicitly pinned pnpm majors (`version: 9`/`version: 10`)
+  which overrode the `packageManager` field; pins removed so action-setup reads the
+  pin. The publish job's node 20 (unsupported by pnpm 11+) was bumped to 22.
+- `94d042e`: README prerequisites pnpm 10 → 12.
+- `1bdd430`: latest Node LTS 22 → 26 (engines, all four workflow jobs, README).
+  Known pnpm 11+ behaviors not yet addressed (flagged, deferred): `minimumReleaseAge`
+  defaults to 1 day (matters for the verdaccio local-publish flow — may need
+  `minimumReleaseAge: 0`), `verifyDepsBeforeRun: install` adds a pre-run check to
+  every script, and the `# pnpm ci is reserved` comments in workflows are stale.
+
+### Chunks
+
 - [ ] Chunk 1 — safe patches and minors
 - [ ] Chunk 2 — ESLint 10 stack
 - [ ] Chunk 3 — webpack tooling majors
-- [ ] Chunk 4 — nx 21 → 24
+- [x] Chunk 4 — nx 21 → 24 (done in `c320c10` as a pnpm prerequisite; see above)
 - [ ] Chunk 5 — @changesets/cli 2 → 3
 - [ ] Chunk 6 — TypeScript 5 → 7
