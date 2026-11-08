@@ -398,8 +398,7 @@ Do not perform this step without the user's explicit approval.
 ## Branch review feedback — triage (2026-11-08)
 
 A critical review of the completed branch (deps + actions) was performed; the
-user triaged the findings as follows. This section records decisions only — no
-code change is implied until the user gives the go-ahead.
+user triaged the findings as follows, with applied fixes noted inline.
 
 1. **`createBumpBranch.cjs` pre-check robustness**: the `hasChangesets`
    predicate (`git ls-files -- .changeset/` → "any line ends in `.md`") is
@@ -407,7 +406,9 @@ code change is implied until the user gives the go-ahead.
    runs `pnpm changeset init` gains a tracked `.changeset/README.md`, which
    silently and permanently disables the pre-check (the friendly "nothing to
    release" error is then replaced by changesets v3's bare exit 1). Triage:
-   **fix approved** (exclude `README.md`); **action held** pending go-ahead.
+   **fix approved** (exclude `README.md`) — **applied** (commit `6dbfde0`;
+   predicate verified against template and derived-repo file sets, CI gate
+   10/10, `actionlint` unchanged at the 2-finding baseline).
 2. **`react.mjs` `version: "19.x"`**: keep. The "detect" crash was re-verified
    end-to-end on 2026-11-08 against the repo's actual shared config (ESLint 10
    API + `lintFiles`, no repo modification): `version: "detect"` →
@@ -417,8 +418,8 @@ code change is implied until the user gives the go-ahead.
    `context.getFilename()` (deprecated in 9, replaced by the `context.filename`
    property); upstream jsx-eslint/eslint-plugin-react#3970 is still open at
    7.37.5 (latest). An explicit version bypasses the detect path entirely.
-   The lockstep-with-React-major maintenance burden is noted; the config comment
-   already documents it.
+   The inline comment at `version: "19.x"` was updated (commit `28ee4b0`) to
+   name the exact removed API and the upstream issue.
 3. **Non-dev dependency coverage**: no omission. The only external *production*
    dependencies in the monorepo are `react` / `react-dom` (examples), which
    **were** updated in Chunk 1 (^19.1.0 → ^19.3.1). The published packages have
