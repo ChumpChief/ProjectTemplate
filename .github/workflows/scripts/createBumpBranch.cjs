@@ -10,7 +10,12 @@ module.exports = async ({github, context, core, exec}, dryRun) => {
     // exit 1 is also used for all other failures, so check for changeset files up front
     // instead of trying to interpret the exit code.)
     const { stdout: changesetFiles } = await exec.getCommandOutput("git", ["ls-files", "--", ".changeset/"]);
-    const hasChangesets = changesetFiles.split("\n").some((line) => line.trim().endsWith(".md"));
+    // (Exclude README.md: `changeset init` in a derived repo tracks
+    // .changeset/README.md, which is not a changeset.)
+    const hasChangesets = changesetFiles.split("\n").some((line) => {
+        const name = line.trim();
+        return name.endsWith(".md") && !name.endsWith("README.md");
+    });
     if (!hasChangesets) {
         throw new Error(`No unreleased changesets on ${ baseBranchName }; nothing to release. Add changesets and re-run this workflow.`);
     }
