@@ -239,6 +239,16 @@ Steps:
 Exit criteria: audit clean; `actionlint` clean; both workflow dry runs green (or any
 failure recorded in the Progress log with the failing step identified).
 
+Done (2026-11-08, commit `8b65f33`): audit re-run against current files immediately
+before the bump (all clear — 6 inline `require()` calls load local `.cjs` files or
+node builtins only; no `getOctokit` redeclarations); v7 and v9 manifests confirmed
+byte-identical for every input in use and the `result` output (runtime node20 →
+node24); `@v9` is an annotated tag at v9.0.0, the latest release (no v9.1, no v10),
+so the major tag carries no stale-resolution risk. Diff was exactly the 11 version
+lines, byte-identical to the validated scratch; `actionlint` at the 2-finding
+baseline. Remaining: step 4 — user triggers dry runs of both dispatch-only
+workflows.
+
 ---
 
 ## Chunk 6 — Consider `pnpm/setup` (successor action), after Chunks 1–5 are complete
@@ -356,3 +366,16 @@ Exit criteria: a recorded decision (adopt or stay, with rationale); if adopted,
   - Remaining verification (unchanged from plan): user's dispatch dry run after
     Chunk 5 exercises the `create_bump_branch`/`create_bump_pr` token steps; the
     `lock_branch`/`unlock_branch` steps are verified at the next real release.
+- 2026-11-08 — **Chunk 5 done** (commit `8b65f33`): `actions/github-script` v7 → v9
+  in all 11 places (release-github.yml ×7, publish-npm.yml ×4). Pure version-string
+  bump. Audit re-run on the current files immediately before editing: the 5 external
+  scripts use only the injected `{github, context, core, exec}` params; the 6 inline
+  `require()` calls load local `.cjs` files or the `fs` builtin — none touch
+  `@actions/github` (v9's only breaking change: the package became ESM-only, and
+  `getOctokit` is an injected function param); zero `getOctokit` redeclarations.
+  v7 and v9 `action.yml` are byte-identical for the inputs in use (`script`,
+  `github-token`, `result-encoding`) and the `result` output (consumed by 6 job
+  outputs); runtime node20 → node24. `@v9` resolves to v9.0.0 = latest release.
+  Scratch dry-run diff exactly 11 lines; `actionlint` identical to the 2-finding
+  baseline. Remaining: user-triggered dry runs of both dispatch-only workflows
+  (first end-to-end pass of all the new majors together).
