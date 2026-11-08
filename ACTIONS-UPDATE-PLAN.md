@@ -304,3 +304,14 @@ Exit criteria: a recorded decision (adopt or stay, with rationale); if adopted,
   lines; `actionlint` identical to the 2-finding baseline. Note: v6's README points
   to the successor `pnpm/setup` — that consideration is Chunk 6. PR CI / dry-run
   verification deferred (local-only effort — verify on push).
+- 2026-11-08 — **Chunk 3 done** (commit `7d4e25b`): `actions/setup-node` v4 → v7 in
+  all 4 places (ci.yml ×1, release-github.yml ×1, publish-npm.yml ×2). Inputs in use
+  — `node-version: 26` (×4) and `registry-url` (publish job ×1) — both unchanged in
+  the v7.1.0 manifest. v5's automatic package-manager caching is inert: v6 limited
+  it to npm, and we pass no `cache:` input, so net caching behavior is unchanged
+  (none). v7's removal of the dummy `NODE_AUTH_TOKEN` export is inert: the publish
+  job sets it explicitly per-step from `secrets.NPM_AUTH_TOKEN`. Scratch dry-run
+  diff was exactly the 4 version lines; `actionlint` identical to the 2-finding
+  baseline. Noted for a later follow-up: v7's docs recommend OIDC / Trusted
+  Publisher for npm publish (direction of travel, not a v7 requirement). PR CI /
+  dry-run verification deferred (local-only effort — verify on push).
