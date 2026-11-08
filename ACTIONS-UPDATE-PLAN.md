@@ -36,6 +36,14 @@ official successor action `pnpm/setup`, taken after all the version bumps are in
 - Runner-version note: several of the new majors require Actions runner ≥ v2.327.1.
   GitHub-hosted `ubuntu-latest` runners track the latest runner image automatically, so
   this is a non-issue here; it would only matter for self-hosted runners.
+- **Local-only effort (user decision, 2026-11-08):** the agent does **not push** for
+  the duration of this effort. Per-chunk verification is therefore local:
+  scratch dry-run + `actionlint` (baseline: 2 pre-existing `[expression]` false
+  positives in release-github.yml lines 168/192 — `mergeInfo`/`tagInfo` JSON-string
+  outputs; criterion is *no new findings vs. that baseline*). The end-to-end checks
+  mentioned in the chunk steps below (PR CI runs, `workflow_dispatch` dry runs) are
+  deferred to when the user pushes the branch; they remain the acceptance evidence
+  for the dispatch-only workflows.
 
 ## Baseline (as of plan creation, 2026-11-08)
 
@@ -279,4 +287,10 @@ Exit criteria: a recorded decision (adopt or stay, with rationale); if adopted,
 
 ## Progress log
 
-<!-- One line per completed chunk: date, commit hash, verification outcome, notes -->
+- 2026-11-08 — **Chunk 1 done** (commit `c4c9ed7`): `actions/checkout` v4 → v7 in all
+  8 places (ci.yml ×1, release-github.yml ×5, publish-npm.yml ×2). Scratch dry-run
+  confirmed the diff is exactly the 8 version lines; `actionlint` 1.7.12 output
+  identical to the recorded 2-finding baseline (no new findings). `ref` input
+  compatibility verified against v7.0.1 `action.yml`; v7's fork-PR block is N/A
+  (no `pull_request_target`/`workflow_run` triggers). PR CI verification deferred
+  (local-only effort — verify on push).
