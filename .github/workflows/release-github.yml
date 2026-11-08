@@ -63,7 +63,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Node setup
         uses: actions/setup-node@v4
         with:
@@ -98,7 +98,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Generate app token
         id: generate_app_token
         uses: actions/create-github-app-token@v1
@@ -124,7 +124,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       # TODO: Also wait for CI of the merged PR to finish successfully?
       - name: Wait for PR merge
         id: wait_for_pr_merge
@@ -163,7 +163,7 @@ jobs:
       tagInfo: ${{ steps.create_tag.outputs.result }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ needs.wait_for_pr_merge.outputs.mergeInfo.mergeCommitSha }}
       - name: Generate app token
@@ -187,7 +187,7 @@ jobs:
     needs: [create_bump_branch, create_tag]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ needs.create_tag.outputs.tagInfo.tagName }}
       - name: Generate app token
