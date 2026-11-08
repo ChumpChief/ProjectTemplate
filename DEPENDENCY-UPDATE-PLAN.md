@@ -233,11 +233,19 @@ active (type-aware `func-style` fires on a planted violation; note the repo's
 `no-unsafe-*` rules are intentionally commented out in `tseslint.mjs`). Dev
 server (`webpack serve`) boots and serves.
 
-**Decision point (pending user choice):**
+**Decision (2026-11-08, user-chosen): Option A′ — plain `typescript: ^6.0.3`**,
+the maximal single-version upgrade: 6.0.3 is the newest version inside
+typescript-eslint's declared range, and TS 6 still ships the JS API ts-loader
+needs. Same tsconfig changes as Option B (TS5107 + `rootDir`), no alias
+entries. TS 7.0 side-by-side stays documented above as the follow-up; moving
+from 6.0.3 to it later is only the package.json swap (no further tsconfig
+churn).
+
+Options considered for reference:
 - **Option A — plan-literal fallback:** pin `typescript: ^5.9.3` in the three
   packages, no other changes, note the deferral in the commit and Progress log,
   stop. Safest; TS 7 deferred.
-- **Option B — official side-by-side** (dry-run-verified above): in
+- **Option B — official side-by-side** (dry-run-verified): in
   examples/package1/package2 devDependencies, replace `typescript: ^5.8.3` with
   the two alias entries from the JSON block; remove the two interop-`false`
   lines from `build/tsconfig-shared/tsconfig.json`; add `"rootDir": "./src"` to
@@ -368,4 +376,21 @@ Do not perform this step without the user's explicit approval.
 - [x] Chunk 3 — webpack tooling majors
 - [x] Chunk 4 — nx 21 → 24 (done in `c320c10` as a pnpm prerequisite; see above)
 - [x] Chunk 5 — @changesets/cli 2 → 3
-- [ ] Chunk 6 — TypeScript 5 → 7
+- [x] Chunk 6 — TypeScript 5 → 6.0.3 (TS 7 deferred; side-by-side documented above)
+
+- `b44b03b` (2026-11-08): **Chunk 6 complete** — typescript 5.8.3 → 6.0.3
+  (examples, package1, package2 devDependencies; single plain entry, no
+  aliases). TS 7.0 (native) deferred: typescript-eslint 8.72.1 peers
+  `typescript <6.1.0`, and ts-loader 9.6.2 needs the JS API that 7.0 does not
+  ship. 6.0.3 is the newest single-version compiler that works, and the
+  stepping stone the TS team recommends. Two tsconfig changes, both forced by
+  TS 6.0's new defaults: (1) removed `allowSyntheticDefaultImports` /
+  `esModuleInterop: false` from tsconfig-shared — an error as of 6.0 (TS5107),
+  both now default to true (no effect on this ESM-only codebase); (2) added
+  `rootDir: ./src` to each project tsconfig — 6.0's `rootDir` default of `./`
+  would shift emit to `built/src/...`, breaking `main`/`types`. Verified in a
+  scratch-copy dry run and in-tree: build output byte-identical to the 5.8.3
+  baseline, type-checked lint active, full gate green (10/10). TS 7.0
+  side-by-side follow-up (npm aliases `@typescript/native` + `typescript` →
+  `@typescript/typescript6`, no further tsconfig changes) is documented in
+  the Chunk 6 section.
