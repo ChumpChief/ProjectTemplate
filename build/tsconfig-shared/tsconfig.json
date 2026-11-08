@@ -76,9 +76,6 @@
     /* Interop Constraints */
     "isolatedModules": true,                             /* Ensure that each file can be safely transpiled without relying on other imports. */
     // "verbatimModuleSyntax": true,                     /* Do not transform or elide any imports or exports not marked as type-only, ensuring they are written in the output file's format based on the 'module' setting. */
-    // NOTE: "allowSyntheticDefaultImports" and "esModuleInterop" are intentionally
-    // omitted (they default to true). Setting them to false is an error as of
-    // TypeScript 6.0 (TS5107) and was removed in 7.0.
     // "preserveSymlinks": true,                         /* Disable resolving symlinks to their realpath. This correlates to the same flag in node. */
     "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
 
