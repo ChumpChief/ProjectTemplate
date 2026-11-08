@@ -160,11 +160,92 @@ Exit criteria: `changeset status` clean, config validated.
 The biggest jump in the plan: TS 7 is the native-compiler line. Tooling from earlier
 chunks (`ts-loader`, `typescript-eslint`) may not fully support it yet.
 
-| Package | From | To | Where |
-|---|---|---|---|
-| `typescript` | ^5.8.3 | ^7.0.2 | examples, packages/package1, packages/package2 |
+### Research (2026-11-08)
 
-Steps:
+**Version landscape** (npm): 5.x last = 5.9.3; 6.x stable = 6.0.3 (2026-04-16);
+7.x stable = 7.0.2 (2026-07-08); 7.1.0-beta (2026-10-20).
+
+**Tooling compatibility:**
+- TS 7.0 is the native (Go) compiler and ships **no programmatic (JS) API** (7.1
+  will ship a *new* one). The npm `typescript@7` package is a small launcher:
+  `bin/tsc` execs a native binary from a platform-specific optionalDependency
+  (e.g. `@typescript/typescript-linux-x64`). Those platform packages have no
+  install scripts → nothing to add to `allowBuilds`.
+- `typescript-eslint` (8.72.1, all releases through 8.72.2-alpha.11): peer
+  `typescript >=4.8.4 <6.1.0` — **no TS 6 or 7 support yet**. This repo's
+  `tseslint.mjs` uses the type-checked rule sets (`strictTypeChecked` +
+  `stylisticTypeChecked`), which are the point of the dependency.
+- `ts-loader` 9.6.2 (stable latest): peer `typescript: *`, but it drives the TS
+  JS API, which 7.0 does not expose. `ts-loader@10.0.0-beta.0` (2026-10-22)
+  peers `typescript >=7.1.0-beta` — it targets the 7.1 native-API line, not 7.0.
+- `jest` here runs **prebuilt JS** (`jest built/.*.test.js`, no ts-jest) → no TS
+  API dependency at test time.
+
+**The original fallback rule (step 2 below) is obsolete.** It assumed tools must
+run the same TS version as the build. The TS 7.0 release post ("TypeScript 7.0: our
+native port of the compiler", devblogs.microsoft.com) officially recommends, for
+repos whose tools import `typescript` via peer deps, a **side-by-side npm-alias
+setup** — TS 7 for compiling, TS 6 for tooling:
+
+```json
+"devDependencies": {
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
+}
+```
+
+`@typescript/typescript6` (published by the TS team; 6.0.0–6.0.2) is the compat
+package: full 6.0 JS API (`main`/`types`), re-exporting the real `typescript@^6`
+(→ 6.0.3) under the private name `@typescript/old`, with its bin renamed `tsc` →
+`tsc6` so it does not collide with the native launcher's `tsc`. Under this setup:
+`tsc` = 7.0.2 (builds), `tsc6` = 6.0.3, `require("typescript")` / peer resolution =
+6.0.3 — inside typescript-eslint's declared range, so no peer warnings and the
+typed rules work unchanged. When ts-loader 10 final and tseslint TS-7 support
+ship, the repo migrates to a single TS 7 without further trickery.
+
+**TS 7.0 config changes that affect this repo** (release post, "Updates Since
+5.x"; most already apply in 6.0):
+- `esModuleInterop` / `allowSyntheticDefaultImports` can no longer be set to
+  `false` (hard error; both default to true). `tsconfig-shared` sets both to
+  false → remove both lines (true is strictly more permissive → no new type
+  errors for this ESM-only codebase).
+- `rootDir` now defaults to `./` (was: inferred from the common source root).
+  Without it, emit moves from `built/index.js` to `built/src/index.js`, breaking
+  the packages' `main`/`types`. Add `"rootDir": "./src"` to each of the three
+  project tsconfigs.
+- `types` now defaults to `[]` (was: all `@types/*` auto-included). Verified safe
+  here: no source uses Node/jest globals without explicit imports (all test files
+  import from `@jest/globals`; no `process`/`Buffer`/`require` in src).
+- Other 7.0 default changes (`noUncheckedSideEffectImports: true`,
+  `stableTypeOrdering: true`, `target`/`module`/`lib` defaults) are N/A: target
+  and module are set explicitly and there are no side-effect-only imports.
+- 7.0 hard-error deprecations (`target: es5`, `moduleResolution: node10`,
+  `baseUrl`, `module: amd/umd/systemjs/none`, …) — none in use.
+
+**Dry run of the side-by-side setup** (scratch copy `/root/dryrun-chunk6`,
+2026-11-08): install clean (native linux-x64 binary, 9.7 MB, no `allowBuilds`
+change); `tsc --version` = 7.0.2, `tsc6 --version` = 6.0.3,
+`require("typescript").version` = 6.0.3; no new peer warnings; full `pnpm run ci`
+10/10 green. Build output vs the 5.8.3 baseline: package1/package2/webpack
+**byte-identical**; examples differs by one cosmetic line (JSX-runtime helper
+import sorted `jsx, jsxs` instead of `jsxs, jsx`). Type-checked lint verified
+active (type-aware `func-style` fires on a planted violation; note the repo's
+`no-unsafe-*` rules are intentionally commented out in `tseslint.mjs`). Dev
+server (`webpack serve`) boots and serves.
+
+**Decision point (pending user choice):**
+- **Option A — plan-literal fallback:** pin `typescript: ^5.9.3` in the three
+  packages, no other changes, note the deferral in the commit and Progress log,
+  stop. Safest; TS 7 deferred.
+- **Option B — official side-by-side** (dry-run-verified above): in
+  examples/package1/package2 devDependencies, replace `typescript: ^5.8.3` with
+  the two alias entries from the JSON block; remove the two interop-`false`
+  lines from `build/tsconfig-shared/tsconfig.json`; add `"rootDir": "./src"` to
+  the three project tsconfigs. Achieves the chunk's goal the way the TS team
+  sanctions it; build output byte-identical. Cost: two TypeScript entries per
+  package.json.
+
+### Steps (original, for reference — superseded by the decision above)
 1. Read the TS 7 migration/release notes.
 2. **Fallback first:** check whether `ts-loader` and `typescript-eslint` declare
    `typescript@7` in their peer ranges (`pnpm why typescript` / npm pages). If not,
