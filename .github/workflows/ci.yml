@@ -27,7 +27,7 @@ jobs:
           node-version: 26
 
       - name: pnpm setup
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v6
 
       - name: Install dependencies
         run: |
