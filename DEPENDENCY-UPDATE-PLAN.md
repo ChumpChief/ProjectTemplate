@@ -260,7 +260,31 @@ Do not perform this step without the user's explicit approval.
 
 - [x] Chunk 1 — safe patches and minors
 - [x] Chunk 2 — ESLint 10 stack
+- `6fab8c3` (2026-11-07): **Chunk 5 complete** — @changesets/cli 3.0.3.
+  v3 is ESM-only (`type: module`), needs Node `^22.11 || ^24 || >=26`, pnpm
+  `>=10`. One behavior change matters for us: `changeset version` now exits 1
+  when no unreleased changesets are pending (v2: silent no-op, exit 0) —
+  upstream added this so CI can detect the no-op case (changesets PR #1860,
+  closing #1815; recommended response is a gate: non-zero => nothing was
+  versioned, do not proceed). Exit 1 is also v3's generic failure code for
+  *any* other error, so decoding it is unreliable; instead
+  `createBumpBranch.cjs` now fails early (before creating the bump branch)
+  with a clear message when `.changeset/` contains no `*.md` files — the
+  "Has changesets?" up-front check from upstream's reference release flow.
+  `pnpm changeset version` itself is unchanged: any real failure still fails
+  the job, and downstream jobs are already skipped on failure. Also pointed
+  the config `$schema` at @changesets/config 4.0.1 (the version v3 validates
+  against; both old and new URLs resolve). Verified in a scratch-copy dry-run
+  (full release cycle: add/status/version with a real changeset, fixed group
+  bumped together, CHANGELOGs written via `@changesets/cli/changelog` — the
+  export still exists in v3) and in-tree: `changeset version` with no
+  changesets exits 1 with "No unreleased changesets found." and touches no
+  files. Full gate green. Known pre-existing wart (out of scope): in
+  non-dry-run, any failure of create_bump_branch also skips unlock_branch
+  (needs-chain), leaving the branch locked — see the TODO in
+  release-github.yml.
+
 - [x] Chunk 3 — webpack tooling majors
 - [x] Chunk 4 — nx 21 → 24 (done in `c320c10` as a pnpm prerequisite; see above)
-- [ ] Chunk 5 — @changesets/cli 2 → 3
+- [x] Chunk 5 — @changesets/cli 2 → 3
 - [ ] Chunk 6 — TypeScript 5 → 7
