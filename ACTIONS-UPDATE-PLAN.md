@@ -408,3 +408,23 @@ Exit criteria: a recorded decision (adopt or stay, with rationale); if adopted,
     for ci.yml; user-triggered `workflow_dispatch` dry runs of
     `release-github.yml` and `publish-npm.yml` (supersedes the Chunk-5 dry runs
     as the final state).
+- 2026-11-08 — **Chunk 6 done** (commit `9d847d0`, decision `c7e3274`, prep
+  `9d9e832`): adopted `pnpm/setup@v3` in all 4 setup pairs (ci.yml ×1,
+  release-github.yml ×1, publish-npm.yml ×2). Each pair → one step:
+  `uses: pnpm/setup@v3` with `install: false`. Net −10 lines. The publish job's
+  no-op `registry-url` is gone. All install/build/publish commands unchanged.
+  - **Verification (local, per the no-push constraint):** `actionlint` = the
+    2-finding baseline only (mergeInfo/tagInfo, now at lines 166/190 after the
+    line shift), zero new findings. No residual `setup-node`/`action-setup`
+    references in any workflow. Local proxy test of the action's core
+    mechanism: `pnpm runtime set node 26 -g` (the exact internal step, reading
+    `devEngines.runtime` from the repo manifest) into an isolated PNPM_HOME →
+    node 26.13.0 downloaded; with `PNPM_HOME/bin` on PATH (as the action does),
+    `node -v` → 26.13.0 and scripts run under the pinned runtime.
+  - **Caveat on actionlint:** it has no registry metadata for `pnpm/setup`
+    (probe-file verified), so the `install: false` input is not machine-checked;
+    the diff was reviewed line-by-line instead.
+  - **Remaining (deferred per the no-push constraint):** PR CI run for ci.yml;
+    user-triggered `workflow_dispatch` dry runs of `release-github.yml` and
+    `publish-npm.yml` — the first end-to-end pass of `pnpm/setup` in this repo,
+    and of all new action majors together. All six chunks are now complete.
