@@ -22,7 +22,7 @@
         "eslint-config-shared": "workspace:*",
         "jest": "^30.5.2",
         "tsconfig-shared": "workspace:*",
-        "typescript": "^5.8.3"
+        "typescript": "^6.0.3"
     },
     "repository": {
         "type": "git",
