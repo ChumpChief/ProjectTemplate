@@ -294,3 +294,13 @@ Exit criteria: a recorded decision (adopt or stay, with rationale); if adopted,
   compatibility verified against v7.0.1 `action.yml`; v7's fork-PR block is N/A
   (no `pull_request_target`/`workflow_run` triggers). PR CI verification deferred
   (local-only effort — verify on push).
+- 2026-11-08 — **Chunk 2 done** (commit `778dba8`): `pnpm/action-setup` v3 → v6 in
+  all 4 places (ci.yml ×1, release-github.yml ×1, publish-npm.yml ×2). No inputs are
+  passed anywhere; v6 resolves pnpm 12.18.0 from the `packageManager` pin via its
+  bootstrap (npm ci of pnpm 11.19.0 from a committed lockfile, then self-update to
+  the pinned version — verified by reading the v6.0.10 source). Defaults benign:
+  `run_install: null`, `cache: false`, `standalone: false`; system Node 26 ≥ 22.13
+  keeps the non-standalone path. Scratch dry-run diff was exactly the 4 version
+  lines; `actionlint` identical to the 2-finding baseline. Note: v6's README points
+  to the successor `pnpm/setup` — that consideration is Chunk 6. PR CI / dry-run
+  verification deferred (local-only effort — verify on push).
