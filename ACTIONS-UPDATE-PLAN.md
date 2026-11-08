@@ -379,3 +379,32 @@ Exit criteria: a recorded decision (adopt or stay, with rationale); if adopted,
   Scratch dry-run diff exactly 11 lines; `actionlint` identical to the 2-finding
   baseline. Remaining: user-triggered dry runs of both dispatch-only workflows
   (first end-to-end pass of all the new majors together).
+- 2026-11-08 — **Chunk 6 decision: ADOPT `pnpm/setup@v3` (variant B′)**, in all
+  three workflows (4 setup pairs). Recorded before editing, per the chunk's
+  procedure.
+  - **Shape:** each `actions/setup-node@v7` + `pnpm/action-setup@v6` pair becomes
+    one inputless step: `uses: pnpm/setup@v3` with `install: false` (existing
+    explicit `pnpm i` steps stay byte-identical). The no-op `registry-url` on the
+    publish job's setup-node step is dropped (confirmed no-op: npmjs is the
+    default registry for both npm and pnpm; auth flows via the explicit per-step
+    `NODE_AUTH_TOKEN` env; no workflow consumes the setup action's outputs).
+  - **Node version source (B′):** the manifest. Prep commit `9d9e832` added
+    `devEngines.runtime: { name: "node", version: "26", onFail: "warn" }` to the
+    root `package.json` (CI reads it via the action's precedence order; locally
+    pnpm 12.18 warns on mismatch without downloading — verified empirically)
+    plus a `.node-version` file (`26`) for local version managers. No `runtime:`
+    or `node-version-file:` inputs — the action's `pnpm runtime set` installs the
+    declared runtime regardless of `onFail`.
+  - **Why adopt:** the v6 README points to `pnpm/setup` as the successor; one
+    step replaces two; the manifest becomes the single source of truth for both
+    pnpm (`packageManager`) and Node (`devEngines.runtime`), consistent with the
+    prep step.
+  - **Accepted caveats:** `pnpm/setup` is younger (first public May 2026, v3.1.2
+    Oct 2026); Node provenance in CI changes (action-managed runtime via `pnpm
+    runtime set` instead of the runner's preinstalled node); `actionlint` 1.7.12
+    has no registry metadata for `pnpm/setup` (cannot validate its inputs —
+    verified by probe file), so input review is manual.
+  - **Remaining verification (deferred per the no-push constraint):** PR CI run
+    for ci.yml; user-triggered `workflow_dispatch` dry runs of
+    `release-github.yml` and `publish-npm.yml` (supersedes the Chunk-5 dry runs
+    as the final state).
