@@ -169,16 +169,35 @@ What changed upstream (release notes):
   behind an HTTP proxy you must set `NODE_USE_ENV_PROXY=1` on the step (we don't use a
   proxy → N/A); minimum runner v2.327.1 (N/A: hosted runners).
 
-Steps:
+Decision (2026-11-08, user-approved — option c):
+- The `@v1` pin actually resolves to **v1.12.0** (2025-03, node20) — already kebab-case
+  inputs, already has the `post:` token-revocation hook. So v2's breaking changes are
+  N/A and revocation behavior is unchanged across the bump.
+- **v3.1.0** introduced `client-id` and soft-deprecated `app-id` (GitHub's UI rename of
+  "App ID" → "Client ID"). Verified in the v3.3.0 source that both inputs map to the
+  identical octokit `appId` field — the rename is a semantic no-op; the repo variable
+  `CHUMPCHIEF_RELEASE_BOT_APP_ID` keeps its name.
+- **Pinned `@v3.3.0` exactly instead of the `v3` major tag.** v3.3.0 (2026-10-12) is
+  the latest release and the `v3` tag points at the same commit — but actionlint 1.7.12
+  serves stale v3.0.0 metadata for the `@v3` tag (verified: the raw file at the tag
+  contains `client-id`; actionlint reports it does not, consistently, no cache on
+  disk). Pinning the exact tag gives actionlint a fresh manifest (verified clean) and
+  keeps the token-minting action at a reproducible version.
+- All 6 call sites: `@v1` → `@v3.3.0` and `app-id:` → `client-id:`.
+
+Steps (as executed):
 1. Replace every `actions/create-github-app-token@v1` with
-   `actions/create-github-app-token@v3` (6 occurrences).
-2. `actionlint` clean. Commit. This chunk cannot be verified by a PR push (workflow is
-   dispatch-only); the user's dry run after Chunk 5 covers it (a dry run exercises the
-   app-token step in `create_bump_branch` / `create_bump_pr`; the
+   `actions/create-github-app-token@v3.3.0` (6 occurrences) and rename the
+   `app-id` input to `client-id` (6 occurrences).
+2. `actionlint` at baseline. Commit. This chunk cannot be verified by a PR push
+   (workflow is dispatch-only); the user's dry run after Chunk 5 covers it (a dry run
+   exercises the app-token step in `create_bump_branch` / `create_bump_pr`; the
    `lock_branch`/`unlock_branch` token steps are skipped in dry run by the workflow's
    own `if:` and are verified at the next real release).
 
-Exit criteria: `actionlint` clean; diff contains no non-version-string changes.
+Exit criteria: `actionlint` at baseline; diff limited to the version string + the
+user-approved `app-id` → `client-id` rename (the "no non-version-string changes"
+ruling is amended for this chunk only).
 
 ---
 
@@ -315,3 +334,25 @@ Exit criteria: a recorded decision (adopt or stay, with rationale); if adopted,
   baseline. Noted for a later follow-up: v7's docs recommend OIDC / Trusted
   Publisher for npm publish (direction of travel, not a v7 requirement). PR CI /
   dry-run verification deferred (local-only effort — verify on push).
+
+- 2026-11-08 — **Chunk 4 done** (commit `0a8bdab`): `create-github-app-token`
+  pinned to v3.3.0 + `client-id` adopted, in all 6 places (release-github.yml only,
+  12 lines: 6 × `uses` + 6 × input rename). User-approved option (c):
+  - **Current pin was v1.12.0**, not v1.0.0: already kebab-case, already revokes
+    tokens (`post:` hook). v2's breaking changes (snake_case removal, required
+    inputs) are N/A — we were already compliant, and revocation is unchanged.
+  - **v3.1.0** added `client-id` and soft-deprecated `app-id` (log warning only).
+    Verified in the v3.3.0 source: `clientId` is passed straight into
+    `createAppAuth({ appId: clientId, ... })` — identical to `app-id`. The repo
+    variable `CHUMPCHIEF_RELEASE_BOT_APP_ID` keeps its name.
+  - **Why the exact pin:** the live `v3` tag moved to the v3.3.0 commit on 2026-10-12
+    (tag → `64ab729`), but actionlint 1.7.12 consistently serves v3.0.0 metadata for
+    `@v3` (stale; no local cache found). With `@v3` + `client-id` it reports 12 false
+    findings; with `@v3.3.0` + `client-id` it fetches the correct fresh manifest and
+    is clean (verified by probe files). Also: reproducible version for the action
+    that mints release tokens. v3.3.0 is the latest release overall (no v4).
+  - `actionlint` after bump: identical to the 2-finding baseline, zero
+    app-token-related findings. All files byte-identical to the validated scratch.
+  - Remaining verification (unchanged from plan): user's dispatch dry run after
+    Chunk 5 exercises the `create_bump_branch`/`create_bump_pr` token steps; the
+    `lock_branch`/`unlock_branch` steps are verified at the next real release.
