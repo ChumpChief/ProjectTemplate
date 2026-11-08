@@ -447,3 +447,38 @@ Exit criteria: a recorded decision (adopt or stay, with rationale); if adopted,
     private.)
   - `actionlint`: the 2-finding baseline only. All 23 changed lines are
     version-string-only.
+
+## Branch review feedback — triage (2026-11-08)
+
+A critical review of the completed branch was performed; the user triaged the
+findings as follows. Dependency-side items (createBumpBranch.cjs pre-check,
+react.mjs detect crash, non-dev dependency coverage) are triaged in
+`DEPENDENCY-UPDATE-PLAN.md`.
+
+1. **`devEngines.runtime.version: "26"` floats the CI Node minor** (pnpm/setup
+   resolves "26" to the latest 26.x at run time): **keep floating** — the repo
+   deliberately targets the latest Node LTS, so a minor float within the 26 line
+   is intended, not an accident.
+2. **Deferred verification**: the entire new workflow stack (checkout v7.0.1,
+   pnpm/setup v3.1.2, app-token v3.3.0, github-script v9.0.0) has been verified
+   by `actionlint` + local proxy tests only, never on a real runner. Note that
+   `actionlint` lacks registry metadata for `pnpm/setup` (its `install: false`
+   input was validated against the action's README instead). Triage: **noted,
+   no action at this moment** — the PR's CI run and the two `workflow_dispatch`
+   dry runs remain the end-to-end checks.
+3. **The 2-finding `actionlint` baseline** (JSON-string `mergeInfo`/`tagInfo`
+   outputs in release-github.yml): **noted, no action at this moment**. Fixing
+   it (splitting the JSON-string job outputs into discrete outputs) would bring
+   the repo to zero findings; deferred.
+4. **Pre-existing workflow TODOs**: `unlock_branch` has no `if: always()` — a
+   non-dry-run failure after `lock_branch` leaves the branch locked until manual
+   intervention; plus the dist-tag "is this actually latest?" check, "use fewer
+   external scripts", and "wait for CI of the merged PR". Triage: **noted, out
+   of scope** for this branch.
+5. **The `# pnpm ci is reserved` comments** (ci.yml, publish-npm.yml): now more
+   load-bearing than when written (pnpm ≥ 11 made `pnpm ci` a built-in
+   clean-install command) but still accurate. Triage: **noted, out of scope**.
+6. **Handoff decisions**: history is **always squashed** (the mixed
+   `chore:`/`deps:`/`ci:`/`docs:` commit subjects are therefore moot); the
+   **branch name** is not a concern; **both plan files will be deleted before
+   the PR — but not yet**.

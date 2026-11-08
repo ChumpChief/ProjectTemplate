@@ -394,3 +394,36 @@ Do not perform this step without the user's explicit approval.
   side-by-side follow-up (npm aliases `@typescript/native` + `typescript` →
   `@typescript/typescript6`, no further tsconfig changes) is documented in
   the Chunk 6 section.
+
+## Branch review feedback — triage (2026-11-08)
+
+A critical review of the completed branch (deps + actions) was performed; the
+user triaged the findings as follows. This section records decisions only — no
+code change is implied until the user gives the go-ahead.
+
+1. **`createBumpBranch.cjs` pre-check robustness**: the `hasChangesets`
+   predicate (`git ls-files -- .changeset/` → "any line ends in `.md`") is
+   correct today (only `config.json` is tracked), but a derived repo that ever
+   runs `pnpm changeset init` gains a tracked `.changeset/README.md`, which
+   silently and permanently disables the pre-check (the friendly "nothing to
+   release" error is then replaced by changesets v3's bare exit 1). Triage:
+   **fix approved** (exclude `README.md`); **action held** pending go-ahead.
+2. **`react.mjs` `version: "19.x"`**: keep. The "detect" crash was re-verified
+   end-to-end on 2026-11-08 against the repo's actual shared config (ESLint 10
+   API + `lintFiles`, no repo modification): `version: "detect"` →
+   `detectReactVersion` → `resolveBasedir` → `context.getFilename()` →
+   `TypeError: Error while loading rule 'react/display-name':
+   contextOrFilename.getFilename is not a function`. ESLint 10 removed
+   `context.getFilename()` (deprecated in 9, replaced by the `context.filename`
+   property); upstream jsx-eslint/eslint-plugin-react#3970 is still open at
+   7.37.5 (latest). An explicit version bypasses the detect path entirely.
+   The lockstep-with-React-major maintenance burden is noted; the config comment
+   already documents it.
+3. **Non-dev dependency coverage**: no omission. The only external *production*
+   dependencies in the monorepo are `react` / `react-dom` (examples), which
+   **were** updated in Chunk 1 (^19.1.0 → ^19.3.1). The published packages have
+   no external production dependencies (package2's sole `dependencies` entry is
+   the `workspace:*` reference to package1), which is why their manifest diffs
+   contain only devDependency changes. No changesets are required for this
+   branch (no workspace package versions changed; devDeps do not affect
+   consumers of the published packages).
