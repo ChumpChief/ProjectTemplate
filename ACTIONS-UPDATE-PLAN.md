@@ -1,8 +1,9 @@
 # GitHub Actions Update Plan
 
-Plan for bringing the template's GitHub Actions up to their newest majors. Split into 5
+Plan for bringing the template's GitHub Actions up to their newest majors. Split into 6
 chunks, ordered simplest first (pure version-string bumps before the one chunk with a
-code audit).
+code audit). Chunk 6 is not a mechanical bump: it is the planned consideration of the
+official successor action `pnpm/setup`, taken after all the version bumps are in.
 
 ## How this plan is executed
 
@@ -13,10 +14,13 @@ code audit).
   Consequence: the branch is no longer purely "deps" — its commit history will contain
   `ci:` commits as well. (The branch name is kept as-is; it will be mentioned in the
   eventual PR description.)
-- Each chunk is (except Chunk 5, which adds a documented audit) **version strings only**:
-  no workflow logic changes. If a bump requires a logic change, stop and record it in the
-  Progress log instead of expanding scope.
-- Commit message format: `ci: bump <action> to <major> (chunk N/5)`
+- Chunks 1–4 are **version strings only**: no workflow logic changes. Chunk 5 adds a
+  documented grep audit. Chunk 6 is a documented, decision-gated shape change (the
+  `pnpm/setup` consideration) — the only chunk allowed to restructure steps, and only
+  after its decision is recorded in the Progress log. If any bump unexpectedly requires
+  a logic change, stop and record it in the Progress log instead of expanding scope.
+- Commit message format: `ci: bump <action> to <major> (chunk N/6)` for Chunks 1–5;
+  Chunk 6 uses `ci: <decision/summary> (chunk 6/6)`.
 - Verification per chunk:
   1. `actionlint` (install locally, e.g. `npm i -g actionlint` or the binary release)
      over all three workflow files — must be clean.
@@ -51,13 +55,16 @@ pnpm 12.18.0). `create-github-app-token`: `app-id`, `private-key`. `github-scrip
 these inputs still exist under the target majors (verified against each action's
 `action.yml` on its newest major tag).
 
-Out of scope (flagged, follow-up):
+In scope as a final decision chunk (Chunk 6):
 - The pnpm org has released a **successor action `pnpm/setup`** (v3.1.2,
   2026-10-25) that installs pnpm *and* a JS runtime in one step, superseding
-  `pnpm/action-setup` (whose v6.0.10 README points to it). Adopting it would replace
-  `pnpm/action-setup` and possibly `actions/setup-node` in several jobs — a workflow
-  shape change (and `setup-node`'s `registry-url` behavior in the npm publish job would
-  need a replacement), not a version bump. Deferred as a design decision.
+  `pnpm/action-setup` (whose v6.0.10 README points to it). Per user decision
+  (2026-11-08), considering it is **in scope for this same effort/branch**,
+  explicitly as the last step, after Chunks 1–5 are done and verified. It is a
+  workflow shape change, not a version bump — hence its own chunk with a decision
+  gate (see Chunk 6).
+
+Out of scope (flagged, follow-up):
 - Stale `# pnpm ci is reserved` comments in ci.yml / publish-npm.yml (already flagged
   in the dependency plan).
 - The `unlock_branch` needs-chain TODO in release-github.yml (already flagged).
@@ -207,12 +214,68 @@ failure recorded in the Progress log with the failing step identified).
 
 ---
 
+## Chunk 6 — Consider `pnpm/setup` (successor action), after Chunks 1–5 are complete
+
+This chunk is a **decision step with an implementation option**, deliberately placed
+last so it evaluates the *final* workflow state (all actions on newest majors) rather
+than re-litigating anything Chunks 1–5 already settled.
+
+Background (verified 2026-11-08 from the v3.1.2 README):
+- `pnpm/setup@v3` downloads pnpm's self-contained release binary from the npm
+  registry (signature-verified, no GitHub API calls) and installs the requested
+  runtime via `pnpm runtime set` — replacing `pnpm/action-setup` **and**
+  `actions/setup-node` (Node case) in one step. Requires pnpm ≥ 11 (we pin 12.18.0 ✓).
+- **`pnpm install` runs automatically** by default (`install: true`) when a
+  `package.json` is present. Our workflows have their own explicit install steps
+  (`pnpm i`, then `pnpm run ci` / `pnpm publish`); the conservative adoption is
+  `install: false` to keep the existing install commands verbatim.
+- Node version source precedence: `runtime` input (e.g. `node@26`) >
+  `devEngines.runtime` in `package.json` > `.node-version`/`.nvmrc`/`.tool-versions`.
+  Our current source is the `node-version: 26` input in `setup-node`. Adoption can
+  move that into the manifest via `devEngines: { runtime: { name: "node", version:
+  "^26.0.0" } }` (pnpm ≥ 10.10 supports `devEngines`) — making the manifest the
+  single source of truth for both pnpm and Node — or simply pass `runtime: node@26`.
+- **No `registry-url` equivalent.** The one affected step is the publish job in
+  `publish-npm.yml`, which sets `registry-url: "https://registry.npmjs.org/"`. Since
+  npmjs is npm's default registry and authentication flows via the explicit
+  `NODE_AUTH_TOKEN` env on the publish step, the `registry-url` is very likely a
+  no-op — but that must be confirmed during this chunk, and if in doubt the publish
+  job keeps `actions/setup-node` (a mixed setup is acceptable; the decision is
+  per-workflow, not forced).
+- Intel-macOS caveat (no pnpm v11 binary) is N/A — we run `ubuntu-latest` only.
+- `cache: true` (pnpm store cache keyed on the lockfile) is available but changes CI
+  behavior; out of scope for a version-update effort — default `false`, revisit later.
+
+Steps:
+1. **Evaluate** the three workflows against the notes above. In particular, confirm
+   the `registry-url` no-op analysis for the publish job (check how `NODE_AUTH_TOKEN`
+   is consumed in the `pnpm publish` exec).
+2. **Decide**, per workflow: adopt `pnpm/setup@v3` (replacing the `setup-node` +
+   `pnpm/action-setup` pair with one step, `install: false`, Node version via
+   `devEngines.runtime` in the root `package.json` if the manifest route is taken) or
+   stay on the Chunk 2/3 result. Record the decision and rationale in the Progress
+   log *before* editing anything.
+3. **If adopted**: make the edits (workflow steps + optionally `devEngines` in
+   `package.json`), keep all install/build/publish commands byte-identical, and
+   `actionlint` clean. Commit as `ci: adopt pnpm/setup, replacing setup-node and
+   pnpm/action-setup (chunk 6/6)` (or the inverse if the decision is "stay": no
+   commit, log only).
+4. **Verify** (adoption only): push — PR CI is the end-to-end check for ci.yml — and
+   ask the user for fresh dry runs of both dispatch workflows (supersedes the
+   Chunk-5 dry runs as the final state).
+5. Log outcome in the Progress log.
+
+Exit criteria: a recorded decision (adopt or stay, with rationale); if adopted,
+`actionlint` clean, PR CI green, both dry runs green.
+
+---
+
 ## Follow-ups after all chunks (separate work, not part of this plan)
 
-- Consider migrating `pnpm/action-setup` + `actions/setup-node` to the successor
-  **`pnpm/setup`** action (see Baseline "out of scope").
 - Next **real** (non-dry-run) release and npm publish are the final verification of
   the `lock_branch`/`unlock_branch`/publish paths on the new action majors.
+- If Chunk 6 adopts `pnpm/setup` with `cache: false`: consider enabling the pnpm
+  store cache (`cache: true`) in a later CI-performance pass.
 
 ## Progress log
 
