@@ -428,3 +428,22 @@ Exit criteria: a recorded decision (adopt or stay, with rationale); if adopted,
     user-triggered `workflow_dispatch` dry runs of `release-github.yml` and
     `publish-npm.yml` — the first end-to-end pass of `pnpm/setup` in this repo,
     and of all new action majors together. All six chunks are now complete.
+- 2026-11-08 — **Post-chunk polish (user-requested): pinned all actions to exact
+  version tags** (commit `aaac88f`). 23 sites across the 3 workflows: checkout
+  `@v7` → `@v7.0.1`, github-script `@v9` → `@v9.0.0`, `pnpm/setup` `@v3` →
+  `@v3.1.2`; `create-github-app-token` was already at exact `@v3.3.0`. No
+  floating tags remain.
+  - **checkout v7.0.0 → v7.0.1:** the `v7` tag had drifted to v7.0.1
+    (published 2026-07-20) after Chunk 1's bump — a benign patch (skip unsafe
+    PR check when input is default, ascii whitespace trim for branch, escape
+    `--unset` values, dep updates). Pinning to `@v7.0.1` both picks it up and
+    prevents future drift.
+  - **Why exact tags rather than commit SHAs:** this is a public repo using
+    public actions — tag references run from GitHub's pre-validated,
+    pre-packaged builds (trusted-publisher mechanism), while SHA pins run the
+    action from source. Released version tags are never re-pointed, so exact
+    tags give no-float pinning with pre-packaged execution and readable
+    workflows. (SHA pinning remains the required choice if the repo ever goes
+    private.)
+  - `actionlint`: the 2-finding baseline only. All 23 changed lines are
+    version-string-only.
