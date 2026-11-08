@@ -51,7 +51,7 @@ jobs:
       # We don't need to run CI prior to computing dist tags, we'll do that in the publish step
       - name: Compute dist tags
         id: compute_dist_tags
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require("fs");
@@ -138,7 +138,7 @@ jobs:
           pnpm run ci
       - name: Publish to NPM${{ inputs.dryRun && ' (dry run)' || '' }}
         id: publish_to_npm
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         with:
@@ -156,7 +156,7 @@ jobs:
             }
       - name: Add latest tags${{ inputs.dryRun && ' (dry run)' || '' }}
         id: add_latest_tags
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         with:
@@ -190,7 +190,7 @@ jobs:
     steps:
       - name: Update Github release
         id: update_github_release
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const dryRun = ${{ inputs.dryRun }} === true;
