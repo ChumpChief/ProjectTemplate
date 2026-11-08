@@ -41,7 +41,7 @@ jobs:
           private-key: ${{ secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY }}
       - name: Lock branch
         id: lock_branch
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           github-token: ${{ steps.generate_app_token.outputs.token }}
           result-encoding: string
@@ -63,9 +63,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: pnpm and Node setup
-        uses: pnpm/setup@v3
+        uses: pnpm/setup@v3.1.2
         with:
           install: false
       - name: Install dependencies
@@ -79,7 +79,7 @@ jobs:
           private-key: ${{ secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY }}
       - name: Create bump branch
         id: create_bump_branch
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           github-token: ${{ steps.generate_app_token.outputs.token }}
           script: |
@@ -96,7 +96,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Generate app token
         id: generate_app_token
         uses: actions/create-github-app-token@v3.3.0
@@ -106,7 +106,7 @@ jobs:
       # TODO: Use fewer external scripts to avoid requiring checkout?
       - name: Create bump PR
         id: create_bump_pr
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           github-token: ${{ steps.generate_app_token.outputs.token }}
           script: |
@@ -122,11 +122,11 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       # TODO: Also wait for CI of the merged PR to finish successfully?
       - name: Wait for PR merge
         id: wait_for_pr_merge
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           script: |
             const script = require(".github/workflows/scripts/waitForPRMerge.cjs");
@@ -145,7 +145,7 @@ jobs:
           client-id: ${{ vars.CHUMPCHIEF_RELEASE_BOT_APP_ID }}
           private-key: ${{ secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY }}
       - name: Unlock branch
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           github-token: ${{ steps.generate_app_token.outputs.token }}
           script: |
@@ -161,7 +161,7 @@ jobs:
       tagInfo: ${{ steps.create_tag.outputs.result }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           ref: ${{ needs.wait_for_pr_merge.outputs.mergeInfo.mergeCommitSha }}
       - name: Generate app token
@@ -172,7 +172,7 @@ jobs:
           private-key: ${{ secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY }}
       - name: Create tag
         id: create_tag
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           github-token: ${{ steps.generate_app_token.outputs.token }}
           script: |
@@ -185,7 +185,7 @@ jobs:
     needs: [create_bump_branch, create_tag]
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           ref: ${{ needs.create_tag.outputs.tagInfo.tagName }}
       - name: Generate app token
@@ -195,7 +195,7 @@ jobs:
           client-id: ${{ vars.CHUMPCHIEF_RELEASE_BOT_APP_ID }}
           private-key: ${{ secrets.CHUMPCHIEF_RELEASE_BOT_APP_PRIVATE_KEY }}
       - name: Create release
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           github-token: ${{ steps.generate_app_token.outputs.token }}
           script: |
